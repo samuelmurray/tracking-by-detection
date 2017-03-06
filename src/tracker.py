@@ -15,7 +15,8 @@ class Tracker:
         self.previous_detections = None
         self.m = Munkres()
 
-    def unique_classes(self, predictions):
+    @staticmethod
+    def unique_classes(predictions):
         classes = set()
         for prediction in predictions:
             classes.add(prediction.class_name)
