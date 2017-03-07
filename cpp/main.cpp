@@ -1,6 +1,13 @@
-#include <iostream>
+
+#include <vector>
+#include "Tracker.h"
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    Tracker tracker;
+    std::vector<Detection> ret = tracker.track();
+    for (auto a : ret) {
+        std::cout << a << std::endl;
+    }
+
     return 0;
 }

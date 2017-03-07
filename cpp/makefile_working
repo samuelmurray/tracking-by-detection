@@ -1,0 +1,20 @@
+CC = g++
+CCFLAGS = -std=c++11 -g -Wall -pedantic
+LDFLAGS =
+SOURCES=$(wildcard *.cpp)
+OBJECTS = $(SOURCES:.cpp=.o)
+TARGET = main.out
+
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(CC) -o $@ $^ $(LDFLAGS) 
+
+%.o: %.cpp %.h
+	$(CC) $(CCFLAGS) -c $<
+
+%.o: %.cpp
+	$(CC) $(CCFLAGS) -c $<
+
+clean:
+	rm -f *.o *.out
