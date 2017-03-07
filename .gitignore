@@ -1,8 +1,19 @@
+#### Project specific ####
+data/
+
+#### IDE #####
+# Clion
+cmake-build-debug/
+CMakeLists.txt
+
 # Pycharm
 .idea/
 
-# Project specific
-data/
+#### C++ ####
+*.o
+*.out
+
+#### Python ####
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
