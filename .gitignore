@@ -12,6 +12,7 @@ CMakeLists.txt
 #### C++ ####
 *.o
 *.out
+*.out.dSYM/
 
 #### Python ####
 
