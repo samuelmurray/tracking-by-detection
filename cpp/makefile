@@ -6,7 +6,7 @@ DEPDIR := .d
 $(shell mkdir -p $(DEPDIR) >/dev/null)
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
-SOURCES=$(wildcard *.cpp)
+SOURCES = $(wildcard *.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 TARGET = main.out
 
@@ -35,3 +35,5 @@ include $(wildcard $(patsubst %,$(DEPDIR)/%.d,$(basename $(SOURCES))))
 
 clean:
 	rm -f *.o *.out
+	rm *.out.dSYM/*
+	rmdir .out.dSYM

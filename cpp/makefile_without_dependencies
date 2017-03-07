@@ -1,9 +1,12 @@
 CC = g++
 CCFLAGS = -std=c++11 -g -Wall -pedantic
 LDFLAGS =
-SOURCES=$(wildcard *.cpp)
+
+SOURCES = $(wildcard *.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 TARGET = main.out
+
+COMPILE = $(CC) $(DEPFLAGS) $(CCFLAGS) -c
 
 all: $(TARGET)
 
@@ -11,10 +14,12 @@ $(TARGET): $(OBJECTS)
 	$(CC) -o $@ $^ $(LDFLAGS) 
 
 %.o: %.cpp %.h
-	$(CC) $(CCFLAGS) -c $<
+	$(COMPILE) $<
 
 %.o: %.cpp
-	$(CC) $(CCFLAGS) -c $<
+	$(COMPILE) $<
 
 clean:
 	rm -f *.o *.out
+	rm *.out.dSYM/*
+	rmdir .out.dSYM
