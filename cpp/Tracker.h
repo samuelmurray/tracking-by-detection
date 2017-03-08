@@ -1,6 +1,7 @@
 #ifndef CPP_TRACKER_H
 #define CPP_TRACKER_H
 
+
 #include <vector>
 #include "Detector.h"
 #include "Detection.h"
@@ -8,7 +9,7 @@
 
 class Tracker {
 public:
-    Tracker();
+    Tracker(Detector *);
 
     virtual ~Tracker();
 
@@ -20,15 +21,10 @@ public:
 
     Tracker &operator=(const Tracker &&) = delete;
 
-    std::vector<Detection> track(); // TODO: image as input
+    virtual std::vector<Detection> track() = 0; // TODO: image as input
 
-private:
-    std::vector<Detection> associate(const std::vector<Detection> newDetections) const;
-
-    Tracker(Detector *);
-
+protected:
     Detector *detector;
-    TrackerState state;
 };
 
 
