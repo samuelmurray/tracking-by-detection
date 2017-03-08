@@ -9,6 +9,8 @@ class Detector {
 public:
     Detector();
 
+    virtual ~Detector();
+
     Detector(const Detector &) = delete;
 
     Detector(const Detector &&) = delete;
@@ -16,8 +18,6 @@ public:
     Detector &operator=(const Detector &) = delete;
 
     Detector &operator=(const Detector &&) = delete;
-
-    virtual ~Detector();
 
     virtual std::vector<Detection> detect() const = 0;
 };
