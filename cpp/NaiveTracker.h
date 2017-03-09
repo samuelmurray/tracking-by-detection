@@ -8,7 +8,7 @@ class NaiveTracker : public Tracker {
 public:
     NaiveTracker();
 
-    std::vector<Detection> track() override;
+    std::vector<Detection> track(cv::Mat mat) override;
 
 private:
     NaiveTracker(Detector *);

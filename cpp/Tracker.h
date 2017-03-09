@@ -3,6 +3,7 @@
 
 
 #include <vector>
+#include <opencv2/core/mat.hpp>
 #include "Detector.h"
 #include "Detection.h"
 #include "TrackerState.h"
@@ -21,7 +22,7 @@ public:
 
     Tracker &operator=(const Tracker &&) = delete;
 
-    virtual std::vector<Detection> track() = 0; // TODO: image as input
+    virtual std::vector<Detection> track(cv::Mat mat) = 0; // TODO: image as input
 
 protected:
     Detector *detector;

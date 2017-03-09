@@ -3,6 +3,7 @@
 
 
 #include <vector>
+#include <opencv2/core/mat.hpp>
 #include "Detection.h"
 
 class Detector {
@@ -19,7 +20,7 @@ public:
 
     Detector &operator=(const Detector &&) = delete;
 
-    virtual std::vector<Detection> detect() const = 0;
+    virtual std::vector<Detection> detect(cv::Mat image) const = 0;
 };
 
 

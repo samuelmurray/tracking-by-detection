@@ -8,7 +8,7 @@ class BBDetector : public Detector {
 public:
     BBDetector();
 
-    std::vector<Detection> detect() const override; // TODO: image as input
+    std::vector<Detection> detect(cv::Mat image) const override; // TODO: image as input
 
 private:
     static std::vector<Detection> parse();

@@ -1,3 +1,4 @@
+#include <opencv2/core/mat.hpp>
 #include "BBDetector.h"
 
 BBDetector::BBDetector()
@@ -5,7 +6,7 @@ BBDetector::BBDetector()
     // Load caffe / TF network
 }
 
-std::vector<Detection> BBDetector::detect() const {
+std::vector<Detection> BBDetector::detect(cv::Mat image) const {
     std::vector<Detection> detections;
     // ret = network.inference(image);
     // det = parse(ret);

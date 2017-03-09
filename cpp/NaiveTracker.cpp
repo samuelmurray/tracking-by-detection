@@ -1,3 +1,4 @@
+#include <opencv2/core/mat.hpp>
 #include "NaiveTracker.h"
 #include "BBDetector.h"
 
@@ -11,8 +12,8 @@ NaiveTracker::NaiveTracker(Detector *detector)
 
 // Methods
 
-std::vector<Detection> NaiveTracker::track() {
-    std::vector<Detection> detections = detector->detect();
+std::vector<Detection> NaiveTracker::track(cv::Mat image) {
+    std::vector<Detection> detections = detector->detect(image);
     std::vector<Detection> associatedDetections = associate(detections);
     state.update(associatedDetections);
     return associatedDetections;
