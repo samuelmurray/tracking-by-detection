@@ -7,6 +7,11 @@ LDFLAGS =
 CCFLAGS += `pkg-config --cflags opencv`
 LDFLAGS += `pkg-config --libs opencv`
 
+# TensorFlow - set PKG_CONFIG_PATH to folder containing tensorflow.pc
+# Make sure /usr/local/lib has the file 'libtensorflow.so'
+CCFLAGS += `pkg-config --cflags tensorflow`
+LDFLAGS += `pkg-config --libs tensorflow`
+
 # Create dependency files
 DEPDIR := .d
 $(shell mkdir -p $(DEPDIR) >/dev/null)
