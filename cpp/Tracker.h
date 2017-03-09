@@ -22,7 +22,7 @@ public:
 
     Tracker &operator=(const Tracker &&) = delete;
 
-    virtual std::vector<Detection> track(cv::Mat mat) = 0; // TODO: image as input
+    virtual std::vector<Detection> track(cv::Mat mat) = 0;
 
 protected:
     Detector *detector;
