@@ -3,23 +3,22 @@
 #include <opencv2/highgui.hpp>
 
 #include <iostream>
-
 #include <string>
 #include <vector>
+
 #include "Tracker.h"
 #include "NaiveTracker.h"
+#include "tf_demo.h"
 
-using namespace cv;
-
-int main(int argc, char **argv) {
-
+void tracking() {
+    using namespace cv;
     Mat image;
     std::string imagePath;
 
     std::cout << "Give the path to an image, or type '0' to exit\n";
     while (std::cin >> imagePath) {
         if (imagePath == "0") {
-            return 0;
+            return;
         }
 
         image = imread(imagePath, 1);
@@ -34,5 +33,10 @@ int main(int argc, char **argv) {
         }
         std::cout << "\nGive more images, or type '0' to exit\n";
     }
-    return 0;
+}
+
+int main(int argc, char **argv) {
+    //tracking();
+    //return 0;
+    return demo();
 }
