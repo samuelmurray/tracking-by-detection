@@ -14,8 +14,6 @@ private:
     NaiveTracker(Detector *);
 
     std::vector<Detection> associate(const std::vector<Detection> newDetections) const;
-
-    TrackerState state;
 };
 
 
