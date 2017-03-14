@@ -27,13 +27,26 @@ SOURCES = $(wildcard *.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 TARGET = main.out
 
+# For compilation without Caffe
+NCSOURCES = $(filter-out BBDetector.cpp, $(wildcard *.cpp))
+NCOBJECTS = $(NCSOURCES:.cpp=.o)
+NCTARGET = ncmain.out
+NCLDFLAGS = `pkg-config --libs opencv`
+
+
 COMPILE = $(CC) $(DEPFLAGS) $(CCFLAGS) $(INCLUDE) -c
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CC) -o $@ $^ $(LDFLAGS) 
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+nocaffe: $(NCTARGET)
+
+$(NCTARGET): $(NCOBJECTS)
+	$(CC) -o $@ $^ $(NCLDFLAGS)
+
 
 %.o: %.cpp %.h
 %.o: %.cpp %.h $(DEPDIR)/%.d
