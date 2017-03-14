@@ -1,28 +1,19 @@
 #include "BBDetector.h"
 
-#include <caffe/caffe.hpp>
-#include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
-#include <algorithm>
-#include <iomanip>
-#include <iosfwd>
-#include <string>
-#include <utility>
-#include <vector>
 
 using namespace caffe;
 
 BBDetector::BBDetector()
         : BBDetector("../models/deploy.prototxt",
-                                "../models/SSD_500x500_iter_99000.caffemodel",
-                                "", "104,117,123") {}
+                     "../models/SSD_500x500_iter_99000.caffemodel",
+                     "", "104,117,123") {}
 
 BBDetector::BBDetector(const string &model_file,
                        const string &weights_file,
                        const string &mean_file,
-                       const string &mean_value) 
+                       const string &mean_value)
         : Detector() {
 
     Caffe::set_mode(Caffe::GPU);
@@ -70,13 +61,13 @@ std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
             continue;
         }
         vector<float> det(result, result + 7);
-        
-        Detection detection{"test_class", 
-                            int((det[3] + det[5]) / 2 * image.cols), 
+
+        Detection detection{"test_class",
+                            int((det[3] + det[5]) / 2 * image.cols),
                             int((det[4] + det[6]) / 2 * image.rows),
-                            int((det[5] - det[3]) * image.cols), 
+                            int((det[5] - det[3]) * image.cols),
                             int((det[6] - det[4]) * image.rows)};
-        
+
         detections.push_back(detection);
         result += 7;
     }

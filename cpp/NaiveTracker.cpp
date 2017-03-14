@@ -1,7 +1,6 @@
 #include "NaiveTracker.h"
 
 #include <caffe/caffe.hpp>
-#include <opencv2/core/core.hpp>
 
 #include "BBDetector.h"
 
