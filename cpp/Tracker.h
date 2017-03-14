@@ -7,7 +7,6 @@
 
 #include "Detector.h"
 #include "Detection.h"
-#include "TrackerState.h"
 
 class Tracker {
 public:

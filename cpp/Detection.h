@@ -6,7 +6,7 @@
 #include <iostream>
 
 struct Detection {
-    std::string class_name;
+    std::string className;
     int cx;
     int cy;
     int width;

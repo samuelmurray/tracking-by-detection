@@ -22,5 +22,3 @@ std::vector<Detection> NaiveDetector::detect(const cv::Mat &image) {
                                    90, 30});
     return detections;
 }
-
-

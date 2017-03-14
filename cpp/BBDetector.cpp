@@ -5,6 +5,8 @@
 
 using namespace caffe;
 
+// Constructors
+
 BBDetector::BBDetector()
         : BBDetector("../models/deploy.prototxt",
                      "../models/SSD_500x500_iter_99000.caffemodel",
@@ -15,7 +17,6 @@ BBDetector::BBDetector(const string &model_file,
                        const string &mean_file,
                        const string &mean_value)
         : Detector() {
-
     Caffe::set_mode(Caffe::GPU);
 
     /* Load the network. */
@@ -34,6 +35,8 @@ BBDetector::BBDetector(const string &model_file,
     /* Load the binaryproto mean file. */
     SetMean(mean_file, mean_value);
 }
+
+// Methods
 
 std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
     Blob<float> *input_layer = net_->input_blobs()[0];
