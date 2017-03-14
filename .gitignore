@@ -1,5 +1,6 @@
 #### Project specific ####
-data/
+data/*
+models/*
 
 #### IDE #####
 # Clion
