@@ -1,19 +1,22 @@
 #ifndef CPP_BBDETECTOR_H
 #define CPP_BBDETECTOR_H
 
+
 #include <caffe/caffe.hpp>
+#include <opencv2/core/core.hpp>
 #include <string>
+#include <memory>
 
 #include "Detector.h"
 
 class BBDetector : public Detector {
 public:
+    BBDetector();
+
     BBDetector(const std::string &model_file,
                const std::string &weights_file,
                const std::string &mean_file,
                const std::string &mean_value);
-
-    BBDetector();
 
     std::vector<Detection> detect(const cv::Mat &image) override;
 

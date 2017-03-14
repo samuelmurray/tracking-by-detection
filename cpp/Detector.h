@@ -2,8 +2,9 @@
 #define CPP_DETECTOR_H
 
 
+#include <opencv2/core/core.hpp>
 #include <vector>
-#include <opencv2/core/mat.hpp>
+
 #include "Detection.h"
 
 class Detector {

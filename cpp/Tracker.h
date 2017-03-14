@@ -2,8 +2,9 @@
 #define CPP_TRACKER_H
 
 
+#include <opencv2/core/core.hpp>
 #include <vector>
-#include <opencv2/core/mat.hpp>
+
 #include "Detector.h"
 #include "Detection.h"
 #include "TrackerState.h"
