@@ -4,6 +4,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 using namespace caffe;
+using std::string;
+using std::vector;
 
 // Constructors
 
@@ -38,25 +40,25 @@ BBDetector::BBDetector(const string &model_file,
 
 // Methods
 
-std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
+vector<Detection> BBDetector::detect(const cv::Mat &image) {
     Blob<float> *input_layer = net_->input_blobs()[0];
     input_layer->Reshape(1, num_channels_,
                          input_geometry_.height, input_geometry_.width);
     /* Forward dimension change to all layers. */
     net_->Reshape();
 
-    std::vector<cv::Mat> input_channels;
+    vector<cv::Mat> input_channels;
     WrapInputLayer(&input_channels);
 
     Preprocess(image, &input_channels);
 
     net_->Forward();
 
-    /* Copy the output layer to a std::vector */
+    /* Copy the output layer to a vector */
     Blob<float> *result_blob = net_->output_blobs()[0];
     const float *result = result_blob->cpu_data();
     const int num_det = result_blob->height();
-    std::vector<Detection> detections;
+    vector<Detection> detections;
     for (int k = 0; k < num_det; ++k) {
         if (result[0] == -1 || result[2] < 0.1) {
             // Skip invalid detection.
@@ -96,7 +98,7 @@ void BBDetector::SetMean(const string &mean_file, const string &mean_value) {
         */
 
         /* The format of the mean file is planar 32-bit float BGR or grayscale. */
-        std::vector<cv::Mat> channels;
+        vector<cv::Mat> channels;
         float *data = mean_blob.mutable_cpu_data();
         for (int i = 0; i < num_channels_; ++i) {
             /* Extract an individual channel. */
@@ -131,7 +133,7 @@ void BBDetector::SetMean(const string &mean_file, const string &mean_value) {
                                                                     "Specify either 1 mean_value or as many as channels: "
                                                                     << num_channels_;
         */
-        std::vector<cv::Mat> channels;
+        vector<cv::Mat> channels;
         for (int i = 0; i < num_channels_; ++i) {
             /* Extract an individual channel. */
             cv::Mat channel(input_geometry_.height, input_geometry_.width, CV_32FC1,
@@ -147,7 +149,7 @@ void BBDetector::SetMean(const string &mean_file, const string &mean_value) {
  * don't need to rely on cudaMemcpy2D. The last preprocessing
  * operation will write the separate channels directly to the input
  * layer. */
-void BBDetector::WrapInputLayer(std::vector<cv::Mat> *input_channels) {
+void BBDetector::WrapInputLayer(vector<cv::Mat> *input_channels) {
     Blob<float> *input_layer = net_->input_blobs()[0];
 
     int width = input_layer->width();
@@ -161,7 +163,7 @@ void BBDetector::WrapInputLayer(std::vector<cv::Mat> *input_channels) {
 }
 
 void BBDetector::Preprocess(const cv::Mat &img,
-                            std::vector<cv::Mat> *input_channels) {
+                            vector<cv::Mat> *input_channels) {
     /* Convert the input image to the input image format of the network. */
     cv::Mat sample;
     if (img.channels() == 3 && num_channels_ == 1)

@@ -28,7 +28,7 @@ private:
     void Preprocess(const cv::Mat &img,
                     std::vector<cv::Mat> *input_channels);
 
-    std::shared_ptr<caffe::Net<float> > net_;
+    std::shared_ptr<caffe::Net<float>> net_;
     cv::Size input_geometry_;
     int num_channels_;
     cv::Mat mean_;
