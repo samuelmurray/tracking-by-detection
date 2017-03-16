@@ -1,0 +1,11 @@
+# Package Information for pkg-config
+
+# Path to where Eigen is installed
+prefix=/usr/local/Cellar/eigen/3.3.3
+# Path to include files
+includedir=${prefix}/include/eigen3
+
+Name: CUDA
+Description: Eigen is a C++ template library for linear algebra
+Version: 3.3.3
+Cflags: -isystem ${includedir}
