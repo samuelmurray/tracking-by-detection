@@ -5,6 +5,10 @@
 
 #include "NaiveDetector.h"
 
+using std::vector;
+using std::map;
+using std::string;
+
 // Constructors
 
 NaiveTracker::NaiveTracker()
@@ -15,12 +19,12 @@ NaiveTracker::NaiveTracker(Detector *detector)
 
 // Methods
 
-std::vector<Detection> NaiveTracker::track(cv::Mat image) {
-    std::vector<BoundingBox> boundingBoxes = detector->detect(image);
-    std::vector<Detection> associatedDetections;
-    std::map<std::string, int> classCount;
-    for (std::vector<BoundingBox>::const_iterator it = boundingBoxes.begin(); it != boundingBoxes.end(); ++it) {
-        Detection d(*it, classCount[it->className]++);
+vector<Detection> NaiveTracker::track(cv::Mat image) {
+    vector<BoundingBox> boundingBoxes = detector->detect(image);
+    vector<Detection> associatedDetections;
+    map<string, int> classCount;
+    for (auto it : boundingBoxes) { //= boundingBoxes.begin(); it != boundingBoxes.end(); ++it) {
+        Detection d(it, classCount[it.className]++);
         associatedDetections.push_back(d);
     }
     return associatedDetections;

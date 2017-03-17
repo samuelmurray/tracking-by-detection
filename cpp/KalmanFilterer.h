@@ -18,13 +18,24 @@ public:
 
     virtual ~KalmanFilterer();
 
-    void update(BoundingBox detection);
+    /**
+     * Updates the state vector with observed bbox.
+     */
+    void update(BoundingBox box);
 
+    /**
+     * Advances the state vector and returns the predicted bounding box estimate.
+     */
     BoundingBox predict();
 
-    BoundingBox get_state();
+    /**
+     * Returns the current bounding box estimate.
+     */
+    BoundingBox getState() const;
 
     static BoundingBox stateToBoundingBox(const Eigen::VectorXd &state);
+
+    static Eigen::VectorXd boundingBoxToMeas(const BoundingBox &box);
 
 private:
     KalmanFilter *filter;

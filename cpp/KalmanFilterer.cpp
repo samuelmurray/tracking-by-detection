@@ -55,7 +55,7 @@ KalmanFilterer::KalmanFilterer(BoundingBox initialState)
 
     filter = new KalmanFilter(dt, F, H, Q, R, P);
     Eigen::VectorXd x0(numStates);
-    // TODO: input the detection to init
+    x0 << boundingBoxToMeas(initialState), 0, 0, 0;
     filter->init(0, x0);
 }
 
@@ -65,26 +65,15 @@ KalmanFilterer::~KalmanFilterer() {
 
 // Methods
 
-void KalmanFilterer::update(BoundingBox detection) {
-    /*
-     * Updates the state vector with observed bbox.
-     */
+void KalmanFilterer::update(BoundingBox box) {
     timeSinceUpdate = 0;
     history = vector<BoundingBox>();
     hits++;
     hitStreak++;
-    Eigen::VectorXd det(numMeas);
-    // TODO: input the detection to update
-    filter->update(det);
+    filter->update(boundingBoxToMeas(box));
 }
 
 BoundingBox KalmanFilterer::predict() {
-    /*
-     * Advances the state vector and returns the predicted bounding box estimate.
-     */
-
-    // TODO: Convert Python code below to C++
-
     if (filter->state()(6) + filter->state()(2)) {
         filter->state()(6) = 0;
     }
@@ -99,15 +88,18 @@ BoundingBox KalmanFilterer::predict() {
     return prediction;
 }
 
-BoundingBox KalmanFilterer::get_state() {
-    /*
-     * Returns the current bounding box estimate.
-     */
-    // TODO: Return this as Detection
-    filter->state();
-    return BoundingBox("", 0, 0, 0, 0);
+BoundingBox KalmanFilterer::getState() const {
+    return stateToBoundingBox(filter->state());
 }
 
 BoundingBox KalmanFilterer::stateToBoundingBox(const Eigen::VectorXd &state) {
-    return BoundingBox("", 0, 0, 0, 0);
+    double width = std::sqrt(state(2) * state(3));
+    double height = state(2) / width;
+    return BoundingBox("FIXME", int(state(0)), int(state(1)), int(width), int(height));
+}
+
+Eigen::VectorXd KalmanFilterer::boundingBoxToMeas(const BoundingBox &box) {
+    Eigen::VectorXd z(numMeas);
+    z << box.cx, box.cy, box.width * box.height, box.width / box.height;
+    return z;
 }

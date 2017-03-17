@@ -1,7 +1,12 @@
 #include "KalmanTracker.h"
 #include "NaiveDetector.h"
+#include <munkres/Matrix.h>
+#include <munkres/Munkres.h>
 
 using std::vector;
+
+const int KalmanTracker::maxAge = 1;
+const int KalmanTracker::minHits = 3;
 
 // Constructors
 
@@ -11,8 +16,16 @@ KalmanTracker::KalmanTracker(Detector *)
 // Methods
 
 vector<Detection> KalmanTracker::track(cv::Mat mat) {
-    vector<BoundingBox> bboxes = detector->detect(mat);
     frameCount++;
+    vector<Detection> toReturn;
+    vector<BoundingBox> detections = detector->detect(mat);
+    vector<BoundingBox> predictions;
+    for (auto filterer : filterers) {
+        filterer.predict();
+    }
+    Association association = associateDetectionsToTrackers(detections);
+
+
 
     /*
      * Params:
@@ -25,6 +38,7 @@ vector<Detection> KalmanTracker::track(cv::Mat mat) {
     // TODO: Convert Python code below to C++
 
     /*
+     self.frame_count += 1
      #get predicted locations from existing trackers.
     trks = np.zeros((len(self.trackers),5))
     to_del = []
@@ -51,7 +65,7 @@ vector<Detection> KalmanTracker::track(cv::Mat mat) {
         self.trackers.append(trk)
     i = len(self.trackers)
     for trk in reversed(self.trackers):
-        d = trk.get_state()[0]
+        d = trk.getState()[0]
         if((trk.time_since_update < 1) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits)):
           ret.append(np.concatenate((d,[trk.id+1])).reshape(1,-1)) # +1 as MOT benchmark requires positive
         i -= 1
@@ -63,4 +77,23 @@ vector<Detection> KalmanTracker::track(cv::Mat mat) {
     return np.empty((0,5))
      */
     return vector<Detection>();
+}
+
+KalmanTracker::Association KalmanTracker::associateDetectionsToTrackers(vector<BoundingBox> detections) {
+    double IOU_THRESHOLD = 0.3;
+    // TODO: Implement
+    if (filterers.empty()) {
+        return KalmanTracker::Association{vector<std::pair<int, int>>(), detections, vector<KalmanFilterer>()};
+    }
+    Matrix<double> iouMatrix(detections.size(), filterers.size());
+    for (size_t row = 0; row < iouMatrix.rows(); ++row) {
+        for (size_t col = 0; col < iouMatrix.columns(); ++col) {
+            iouMatrix(row, col) = BoundingBox::iou(detections.at(row), filterers.at(col).getState());
+        }
+    }
+
+    Munkres<double> munkres;
+    munkres.solve(iouMatrix);
+
+    return KalmanTracker::Association();
 }

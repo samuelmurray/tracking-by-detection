@@ -5,10 +5,14 @@
 #include "Tracker.h"
 #include "KalmanFilterer.h"
 
+class KalmanTracker;
+
 class KalmanTracker : public Tracker {
+    struct Association;
+
 public:
-    static const int maxAge = 1;
-    static const int minHits = 3;
+    static const int maxAge;
+    static const int minHits;
 
 public:
     KalmanTracker(Detector *);
@@ -18,6 +22,14 @@ public:
 private:
     std::vector<KalmanFilterer> filterers = std::vector<KalmanFilterer>();
     int frameCount = 1;
+
+    Association associateDetectionsToTrackers(std::vector<BoundingBox> detections);
+
+    struct Association {
+        std::vector<std::pair<int, int>> matches;
+        std::vector<BoundingBox> unmatchedBoxes;
+        std::vector<KalmanFilterer> unmatchedFilterers;
+    };
 };
 
 

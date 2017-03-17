@@ -59,11 +59,10 @@ void KalmanFilter::update(const Eigen::VectorXd &z) {
     K = P * H.transpose() * (H * P * H.transpose() + R).inverse(); // P H^T S^-1
     x_hat = x_hat + K * (z - H * x_hat); // x + K * y
     P = (I - K * H) * P;
-
     t += dt;
 }
 
-void KalmanFilter::update(const Eigen::VectorXd &y, double dt, const Eigen::MatrixXd F) {
+void KalmanFilter::update(const Eigen::VectorXd &y, double dt, const Eigen::MatrixXd &F) {
     this->F = F;
     this->dt = dt;
     update(y);
