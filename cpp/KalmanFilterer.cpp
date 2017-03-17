@@ -2,18 +2,23 @@
 
 using std::vector;
 
+const int KalmanFilterer::numStates = 7;
+const int KalmanFilterer::numMeas = 4;
+const double KalmanFilterer::dt = 1;
+int KalmanFilterer::count = 1;
+
 // Constructors
 
-KalmanFilterer::KalmanFilterer(Detection detection)
-        : filter(nullptr), history(vector<Detection>()), ID(count++) {
-    Eigen::MatrixXd A(numStates, numStates); // System dynamics matrix
-    Eigen::MatrixXd C(numMeas, numStates); // Output matrix
+KalmanFilterer::KalmanFilterer(BoundingBox initialState)
+        : filter(nullptr), history(vector<BoundingBox>()), ID(count++) {
+    Eigen::MatrixXd F(numStates, numStates); // System dynamics matrix
+    Eigen::MatrixXd H(numMeas, numStates); // Output matrix
     Eigen::MatrixXd Q(numStates, numStates); // Process noise covariance
     Eigen::MatrixXd R(numMeas, numMeas); // Measurement noise covariance
     Eigen::MatrixXd P(numStates, numStates); // Estimate error covariance
 
     // define constant velocity model
-    A << 1, 0, 0, 0, dt, 0, 0,
+    F << 1, 0, 0, 0, dt, 0, 0,
             0, 1, 0, 0, 0, dt, 0,
             0, 0, 1, 0, 0, 0, dt,
             0, 0, 0, 1, 0, 0, 0,
@@ -21,7 +26,7 @@ KalmanFilterer::KalmanFilterer(Detection detection)
             0, 0, 0, 0, 0, 1, 0,
             0, 0, 0, 0, 0, 0, 1;
 
-    C << 1, 0, 0, 0, 0, 0, 0,
+    H << 1, 0, 0, 0, 0, 0, 0,
             0, 1, 0, 0, 0, 0, 0,
             0, 0, 1, 0, 0, 0, 0,
             0, 0, 0, 1, 0, 0, 0;
@@ -48,7 +53,7 @@ KalmanFilterer::KalmanFilterer(Detection detection)
             0, 0, 0, 0, 0, 10000, 0,
             0, 0, 0, 0, 0, 0, 10000;
 
-    filter = new KalmanFilter(dt, A, C, Q, R, P);
+    filter = new KalmanFilter(dt, F, H, Q, R, P);
     Eigen::VectorXd x0(numStates);
     // TODO: input the detection to init
     filter->init(0, x0);
@@ -60,12 +65,12 @@ KalmanFilterer::~KalmanFilterer() {
 
 // Methods
 
-void KalmanFilterer::update(Detection detection) {
+void KalmanFilterer::update(BoundingBox detection) {
     /*
      * Updates the state vector with observed bbox.
      */
     timeSinceUpdate = 0;
-    history = vector<Detection>();
+    history = vector<BoundingBox>();
     hits++;
     hitStreak++;
     Eigen::VectorXd det(numMeas);
@@ -73,32 +78,36 @@ void KalmanFilterer::update(Detection detection) {
     filter->update(det);
 }
 
-Detection KalmanFilterer::predict() {
+BoundingBox KalmanFilterer::predict() {
     /*
      * Advances the state vector and returns the predicted bounding box estimate.
      */
 
     // TODO: Convert Python code below to C++
 
-    /*
-    if((self.kf.x[6]+self.kf.x[2])<=0):
-    self.kf.x[6] *= 0.0
-    self.kf.predict()
-    self.age += 1
-    if(self.time_since_update>0):
-      self.hit_streak = 0
-    self.time_since_update += 1
-    self.history.append(convert_x_to_bbox(self.kf.x))
-    return self.history[-1]
-     */
-    return Detection();
+    if (filter->state()(6) + filter->state()(2)) {
+        filter->state()(6) = 0;
+    }
+    filter->predict();
+    age++;
+    if (timeSinceUpdate > 0) {
+        hitStreak = 0;
+    }
+    timeSinceUpdate++;
+    BoundingBox prediction = stateToBoundingBox(filter->state());
+    history.push_back(prediction);
+    return prediction;
 }
 
-Detection KalmanFilterer::get_state() {
+BoundingBox KalmanFilterer::get_state() {
     /*
      * Returns the current bounding box estimate.
      */
     // TODO: Return this as Detection
     filter->state();
-    return Detection();
+    return BoundingBox("", 0, 0, 0, 0);
+}
+
+BoundingBox KalmanFilterer::stateToBoundingBox(const Eigen::VectorXd &state) {
+    return BoundingBox("", 0, 0, 0, 0);
 }

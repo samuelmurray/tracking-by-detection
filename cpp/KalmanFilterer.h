@@ -4,29 +4,31 @@
 
 #include <vector>
 #include "KalmanFilter.h"
-#include "Detection.h"
+#include "BoundingBox.h"
 
 class KalmanFilterer {
 public:
-    static const int numStates = 7; // [x, y, area, ratio, vx, vy, area_change]
-    static const int numMeas = 4; // [x, y, area, ratio]
-    static const double dt = 1;
-    static int count = 1; // TODO: This should be a dict from class to count
+    static const int numStates; // [x, y, area, ratio, vx, vy, area_change]
+    static const int numMeas; // [x, y, area, ratio]
+    static const double dt;
+    static int count; // TODO: This should be a dict from class to count
 
 public:
-    KalmanFilterer(Detection detection);
+    KalmanFilterer(BoundingBox initialState);
 
     virtual ~KalmanFilterer();
 
-    void update(Detection detection);
+    void update(BoundingBox detection);
 
-    Detection predict();
+    BoundingBox predict();
 
-    Detection get_state();
+    BoundingBox get_state();
+
+    static BoundingBox stateToBoundingBox(const Eigen::VectorXd &state);
 
 private:
     KalmanFilter *filter;
-    std::vector<Detection> history;
+    std::vector<BoundingBox> history;
     int ID;
     int timeSinceUpdate = 0;
     int hits = 0;

@@ -8,7 +8,7 @@ class NaiveDetector : public Detector {
 public:
     NaiveDetector();
 
-    std::vector<Detection> detect(const cv::Mat &image) override;
+    std::vector<BoundingBox> detect(const cv::Mat &image) override;
 };
 
 

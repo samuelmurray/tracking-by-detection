@@ -9,6 +9,9 @@ LDFLAGS += `pkg-config --libs opencv`
 
 export PKG_CONFIG_PATH := ../config:$(PKG_CONFIG_PATH)
 
+# Eigen
+CCFLAGS += `pkg-config --cflags eigen`
+
 # Caffe
 CCFLAGS += `pkg-config --cflags caffe`
 LDFLAGS += `pkg-config --libs caffe`

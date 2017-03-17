@@ -11,7 +11,7 @@ KalmanTracker::KalmanTracker(Detector *)
 // Methods
 
 vector<Detection> KalmanTracker::track(cv::Mat mat) {
-    vector<Detection> detections = detector->detect(mat);
+    vector<BoundingBox> bboxes = detector->detect(mat);
     frameCount++;
 
     /*

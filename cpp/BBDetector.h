@@ -18,7 +18,7 @@ public:
                const std::string &mean_file,
                const std::string &mean_value);
 
-    std::vector<Detection> detect(const cv::Mat &image) override;
+    std::vector<BoundingBox> detect(const cv::Mat &image) override;
 
 private:
     void SetMean(const std::string &mean_file, const std::string &mean_value);

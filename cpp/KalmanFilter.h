@@ -17,59 +17,72 @@ class KalmanFilter {
 public:
 
     /**
-    * Create a Kalman filter with the specified matrices.
-    *   A - System dynamics matrix
-    *   C - Output matrix
-    *   Q - Process noise covariance
-    *   R - Measurement noise covariance
-    *   P - Estimate error covariance
-    */
+     * Create a Kalman filter with the specified matrices.
+     *   F - System dynamics matrix
+     *   H - Output matrix
+     *   Q - Process noise covariance
+     *   R - Measurement noise covariance
+     *   P - Estimate error covariance
+     */
     KalmanFilter(
             double dt,
-            const Eigen::MatrixXd& A,
-            const Eigen::MatrixXd& C,
-            const Eigen::MatrixXd& Q,
-            const Eigen::MatrixXd& R,
-            const Eigen::MatrixXd& P
+            const Eigen::MatrixXd &F,
+            const Eigen::MatrixXd &H,
+            const Eigen::MatrixXd &Q,
+            const Eigen::MatrixXd &R,
+            const Eigen::MatrixXd &P
     );
 
     /**
-    * Create a blank estimator.
-    */
+     * Create a blank estimator.
+     */
     KalmanFilter();
 
     /**
-    * Initialize the filter with initial states as zero.
-    */
+     * Initialize the filter with initial states as zero.
+     */
     void init();
 
     /**
-    * Initialize the filter with a guess for initial states.
-    */
-    void init(double t0, const Eigen::VectorXd& x0);
+     * Initialize the filter with a guess for initial states.
+     */
+    void init(double t0, const Eigen::VectorXd &x0);
 
     /**
-    * Update the estimated state based on measured values. The
-    * time step is assumed to remain constant.
-    */
-    void update(const Eigen::VectorXd& y);
+     * Predict next state based on current state.
+     * The time step is assumed to remain constant.
+     */
+    void predict();
 
     /**
-    * Update the estimated state based on measured values,
-    * using the given time step and dynamics matrix.
-    */
-    void update(const Eigen::VectorXd& y, double dt, const Eigen::MatrixXd A);
+     * Predict next state based on current state,
+     * using the given time step.
+     */
+    void predict(double dt);
 
     /**
-    * Return the current state and time.
-    */
-    Eigen::VectorXd state() { return x_hat; };
-    double time() { return t; };
+     * Update the estimated state based on measured values.
+     * The time step is assumed to remain constant.
+     */
+    void update(const Eigen::VectorXd &z);
+
+    /**
+     * Update the estimated state based on measured values,
+     * using the given time step and dynamics matrix.
+     */
+    void update(const Eigen::VectorXd &y, double dt, const Eigen::MatrixXd F);
+
+    /**
+     * Return the current state and time.
+     */
+    Eigen::VectorXd state() const { return x_hat; };
+
+    double time() const { return t; };
 
 private:
 
     // Matrices for computation
-    Eigen::MatrixXd A, C, Q, R, P, K, P0;
+    Eigen::MatrixXd F, H, Q, R, P, K, P0;
 
     // System dimensions
     int m, n;

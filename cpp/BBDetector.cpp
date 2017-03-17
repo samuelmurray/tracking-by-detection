@@ -40,7 +40,7 @@ BBDetector::BBDetector(const string &model_file,
 
 // Methods
 
-vector<Detection> BBDetector::detect(const cv::Mat &image) {
+vector<BoundingBox> BBDetector::detect(const cv::Mat &image) {
     Blob<float> *input_layer = net_->input_blobs()[0];
     input_layer->Reshape(1, num_channels_,
                          input_geometry_.height, input_geometry_.width);
@@ -58,7 +58,7 @@ vector<Detection> BBDetector::detect(const cv::Mat &image) {
     Blob<float> *result_blob = net_->output_blobs()[0];
     const float *result = result_blob->cpu_data();
     const int num_det = result_blob->height();
-    vector<Detection> detections;
+    vector<BoundingBox> detections;
     for (int k = 0; k < num_det; ++k) {
         if (result[0] == -1 || result[2] < 0.1) {
             // Skip invalid detection.
@@ -67,11 +67,11 @@ vector<Detection> BBDetector::detect(const cv::Mat &image) {
         }
         vector<float> det(result, result + 7);
 
-        Detection detection{"test_class",
-                            int((det[3] + det[5]) / 2 * image.cols),
-                            int((det[4] + det[6]) / 2 * image.rows),
-                            int((det[5] - det[3]) * image.cols),
-                            int((det[6] - det[4]) * image.rows)};
+        BoundingBox detection{"test_class",
+                              int((det[3] + det[5]) / 2 * image.cols),
+                              int((det[4] + det[6]) / 2 * image.rows),
+                              int((det[5] - det[3]) * image.cols),
+                              int((det[6] - det[4]) * image.rows)};
 
         detections.push_back(detection);
         result += 7;

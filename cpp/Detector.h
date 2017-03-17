@@ -4,8 +4,7 @@
 
 #include <opencv2/core/core.hpp>
 #include <vector>
-
-#include "Detection.h"
+#include "BoundingBox.h"
 
 class Detector {
 public:
@@ -21,7 +20,7 @@ public:
 
     Detector &operator=(const Detector &&) = delete;
 
-    virtual std::vector<Detection> detect(const cv::Mat &image) = 0;
+    virtual std::vector<BoundingBox> detect(const cv::Mat &image) = 0;
 };
 
 

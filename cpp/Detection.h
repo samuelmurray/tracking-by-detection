@@ -3,14 +3,15 @@
 
 
 #include <string>
-#include <iostream>
+#include <ostream>
+#include "BoundingBox.h"
 
 struct Detection {
-    std::string className;
-    int cx;
-    int cy;
-    int width;
-    int height;
+    Detection(const BoundingBox &boundingBox, int ID);
+
+    Detection(const std::string &className, int cx, int cy, int width, int height, int ID);
+
+    BoundingBox boundingBox;
     int ID;
 };
 
