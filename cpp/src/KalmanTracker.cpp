@@ -1,7 +1,7 @@
 #include "KalmanTracker.h"
 #include "NaiveDetector.h"
-#include <munkres/Matrix.h>
-#include <munkres/Munkres.h>
+#include <munkres/matrix.h>
+#include <munkres/munkres.h>
 
 using std::vector;
 

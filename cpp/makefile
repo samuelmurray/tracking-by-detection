@@ -3,6 +3,11 @@ CC = g++
 CCFLAGS = -std=c++11 -g -Wall -pedantic
 LDFLAGS =
 
+SOURCEDIR = src
+BUILDDIR = build
+
+#VPATH = ./munkres
+
 # OpenCV - set PKG_CONFIG_PATH to folder containing opencv.pc
 CCFLAGS += `pkg-config --cflags opencv`
 LDFLAGS += `pkg-config --libs opencv`
@@ -26,18 +31,20 @@ $(shell mkdir -p $(DEPDIR) >/dev/null)
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
 # Input/Output files
-SOURCES = $(wildcard *.cpp)
-OBJECTS = $(SOURCES:.cpp=.o)
+SOURCES = $(wildcard $(SOURCEDIR)/*.cpp)
+#OBJECTS = $(SOURCES:.cpp=.o)
+OBJECTS = $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
 TARGET = main.out
 
 # For compilation without Caffe
-NCSOURCES = $(filter-out BBDetector.cpp, $(wildcard *.cpp))
-NCOBJECTS = $(NCSOURCES:.cpp=.o)
+NCSOURCES = $(filter-out $(SOURCEDIR)/BBDetector.cpp, $(SOURCES))
+#NCOBJECTS = $(NCSOURCES:.cpp=.o)
+NCOBJECTS = $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(NCSOURCES))
 NCTARGET = ncmain.out
 NCLDFLAGS = `pkg-config --libs opencv`
 
 
-COMPILE = $(CC) $(DEPFLAGS) $(CCFLAGS) $(INCLUDE) -c
+COMPILE = $(CC) $(DEPFLAGS) $(CCFLAGS) -c
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
 all: $(TARGET)
@@ -51,14 +58,14 @@ $(NCTARGET): $(NCOBJECTS)
 	$(CC) -o $@ $^ $(NCLDFLAGS)
 
 
-%.o: %.cpp %.h
-%.o: %.cpp %.h $(DEPDIR)/%.d
-	$(COMPILE) $<
+$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(SOURCEDIR)/%.h
+$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(SOURCEDIR)/%.h $(DEPDIR)/%.d
+	$(COMPILE) $< -o $@
 	$(POSTCOMPILE)
 
-%.o: %.cpp
-%.o: %.cpp $(DEPDIR)/%.d
-	$(COMPILE) $<
+$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp
+$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(DEPDIR)/%.d
+	$(COMPILE) $< -o $@
 	$(POSTCOMPILE)
 
 $(DEPDIR)/%.d: ;
@@ -67,5 +74,5 @@ $(DEPDIR)/%.d: ;
 include $(wildcard $(patsubst %,$(DEPDIR)/%.d,$(basename $(SOURCES))))
 
 clean:
-	rm -f $(OBJECTS) $(TARGET)
+	rm -f $(OBJECTS) $(NCOBJECTS) $(TARGET)
 	rm -rf $(TARGET).dSYM/
