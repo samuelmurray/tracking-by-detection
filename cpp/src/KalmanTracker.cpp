@@ -1,7 +1,6 @@
 #include "KalmanTracker.h"
 #include "NaiveDetector.h"
-#include <munkres/matrix.h>
-#include <munkres/munkres.h>
+#include <dlib/optimization.h>
 
 using std::vector;
 
@@ -10,90 +9,102 @@ const int KalmanTracker::minHits = 3;
 
 // Constructors
 
-KalmanTracker::KalmanTracker(Detector *)
-        : Tracker(new NaiveDetector) {}
+KalmanTracker::KalmanTracker()
+        : KalmanTracker(std::shared_ptr<NaiveDetector>(new NaiveDetector())) {}
+
+KalmanTracker::KalmanTracker(std::shared_ptr<Detector> detector)
+        : Tracker(detector) {}
 
 // Methods
 
 vector<Detection> KalmanTracker::track(cv::Mat mat) {
     frameCount++;
-    vector<Detection> toReturn;
-    vector<BoundingBox> detections = detector->detect(mat);
+    vector<BoundingBox> boundingBoxes = detector->detect(mat);
     vector<BoundingBox> predictions;
     for (auto filterer : filterers) {
         filterer.predict();
     }
-    Association association = associateDetectionsToTrackers(detections);
+    std::cout << "\nPREDICTED\n";
+    Association association = associateDetectionsToTrackers(boundingBoxes);
 
+    std::cout << "\nASSOCIATED\n";
 
+    // Update matched trackers with assigned detections
+    for (auto match : association.matches) {
+        filterers.at(match.second).update(boundingBoxes.at(match.first));
+    }
+    std::cout << "\nUPDATED\n";
 
+    // Create and initialise new trackers for unmatched detections
+    for (auto detection : association.unmatchedBoxes) {
+        KalmanFilterer filterer(detection);
+        std::cout << "\nWUT\n";
+        filterers.push_back(filterer);
+        std::cout << "\nPUSHED\n";
+    }
+    std::cout << "\nINITIALIZED\n";
+
+    // Remove filterers that have been inactive for too long
     /*
-     * Params:
-     *  dets - a numpy array of detections in the format [[x,y,w,h,score],[x,y,w,h,score],...]
-     * Requires: this method must be called once for each frame even with empty detections.
-     * Returns the a similar array, where the last column is the object ID.
-     * NOTE: The number of objects returned may differ from the number of detections provided.
+    auto new_end = std::remove_if(filterers.begin(), filterers.end(),
+                                  [](const KalmanFilterer &filterer) {
+                                      return filterer.getTimeSinceUpdate() > maxAge;
+                                  });
+    filterers.erase(new_end, filterers.end());
      */
 
-    // TODO: Convert Python code below to C++
+    // Add the tracked objects
+    vector<Detection> trackings;
+    for (auto filterer : filterers) {
+        if (filterer.getTimeSinceUpdate() < 1 &&
+            (filterer.getHitStreak() >= minHits || frameCount <= minHits)) {
+            trackings.push_back(filterer.detection());
+        }
+    }
 
-    /*
-     self.frame_count += 1
-     #get predicted locations from existing trackers.
-    trks = np.zeros((len(self.trackers),5))
-    to_del = []
-    ret = []
-    for t,trk in enumerate(trks):
-      pos = self.trackers[t].predict()[0]
-      trk[:] = [pos[0], pos[1], pos[2], pos[3], 0]
-      if(np.any(np.isnan(pos))):
-        to_del.append(t)
-    trks = np.ma.compress_rows(np.ma.masked_invalid(trks))
-    for t in reversed(to_del):
-      self.trackers.pop(t)
-    matched, unmatched_dets, unmatched_trks = associate_detections_to_trackers(dets,trks)
-
-    #update matched trackers with assigned detections
-    for t,trk in enumerate(self.trackers):
-      if(t not in unmatched_trks):
-        d = matched[np.where(matched[:,1]==t)[0],0]
-        trk.update(dets[d,:][0])
-
-    #create and initialise new trackers for unmatched detections
-    for i in unmatched_dets:
-        trk = KalmanBoxTracker(dets[i,:])
-        self.trackers.append(trk)
-    i = len(self.trackers)
-    for trk in reversed(self.trackers):
-        d = trk.getState()[0]
-        if((trk.time_since_update < 1) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits)):
-          ret.append(np.concatenate((d,[trk.id+1])).reshape(1,-1)) # +1 as MOT benchmark requires positive
-        i -= 1
-        #remove dead tracklet
-        if(trk.time_since_update > self.max_age):
-          self.trackers.pop(i)
-    if(len(ret)>0):
-      return np.concatenate(ret)
-    return np.empty((0,5))
-     */
-    return vector<Detection>();
+    return trackings;
 }
 
 KalmanTracker::Association KalmanTracker::associateDetectionsToTrackers(vector<BoundingBox> detections) {
     double IOU_THRESHOLD = 0.3;
+    int doublePrecision = 100;
     // TODO: Implement
     if (filterers.empty()) {
         return KalmanTracker::Association{vector<std::pair<int, int>>(), detections, vector<KalmanFilterer>()};
     }
-    Matrix<double> iouMatrix(detections.size(), filterers.size());
-    for (size_t row = 0; row < iouMatrix.rows(); ++row) {
-        for (size_t col = 0; col < iouMatrix.columns(); ++col) {
-            iouMatrix(row, col) = BoundingBox::iou(detections.at(row), filterers.at(col).getState());
+    dlib::matrix<int> cost(detections.size(), filterers.size());
+    for (size_t row = 0; row < detections.size(); ++row) {
+        for (size_t col = 0; col < filterers.size(); ++col) {
+            cost(row, col) = int(doublePrecision * BoundingBox::iou(detections.at(row), filterers.at(col).getState()));
         }
     }
+    if (cost.nr() > cost.nc()) {
+        cost = dlib::join_rows(cost, dlib::zeros_matrix<int>(1, cost.nr() - cost.nc()));
+    } else if (cost.nc() > cost.nr()) {
+        cost = dlib::join_cols(cost, dlib::zeros_matrix<int>(cost.nc() - cost.nr(), 1));
+    }
 
-    Munkres<double> munkres;
-    munkres.solve(iouMatrix);
-
-    return KalmanTracker::Association();
+    vector<long> assignment = dlib::max_cost_assignment(cost);
+    std::vector<std::pair<int, int>> matches;
+    vector<BoundingBox> unmatchedDetections;
+    vector<KalmanFilterer> unmatchedFilterers;
+    /* Maybe not needed? Matches to "padded" detections/filterers should have value 0
+    for (int d = 0; d < assignment.size(); ++d) {
+        if (assignment[d] >= filterers.size()) {
+            unmatchedDetections.push_back(BoundingBox(detections.at(d)));
+        }
+        if (d >= detections.size()) {
+            unmatchedFilterers.push_back(KalmanFilterer(filterers.at(assignment[d])));
+        }
+    }
+     */
+    for (int d = 0; d < assignment.size(); ++d) {
+        if (cost(d, assignment[d]) < IOU_THRESHOLD * doublePrecision) {
+            unmatchedDetections.push_back(BoundingBox(detections.at(d)));
+            unmatchedFilterers.push_back(KalmanFilterer(filterers.at(assignment[d])));
+        } else {
+            matches.push_back(std::pair<int, int>(d, assignment[d]));
+        }
+    }
+    return KalmanTracker::Association{matches, unmatchedDetections, unmatchedFilterers};
 }

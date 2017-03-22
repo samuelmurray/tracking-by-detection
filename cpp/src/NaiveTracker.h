@@ -11,7 +11,7 @@ public:
     std::vector<Detection> track(cv::Mat mat) override;
 
 private:
-    NaiveTracker(Detector *);
+    NaiveTracker(std::shared_ptr<Detector>);
 };
 
 

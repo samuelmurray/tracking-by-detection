@@ -15,7 +15,9 @@ public:
     static const int minHits;
 
 public:
-    KalmanTracker(Detector *);
+    KalmanTracker();
+
+    KalmanTracker(std::shared_ptr<Detector>);
 
     std::vector<Detection> track(cv::Mat mat) override;
 

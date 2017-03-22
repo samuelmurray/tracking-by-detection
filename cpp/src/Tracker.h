@@ -10,7 +10,7 @@
 
 class Tracker {
 public:
-    Tracker(Detector *);
+    Tracker(std::shared_ptr<Detector>);
 
     virtual ~Tracker();
 
@@ -25,7 +25,7 @@ public:
     virtual std::vector<Detection> track(cv::Mat mat) = 0;
 
 protected:
-    Detector *detector;
+    std::shared_ptr<Detector> detector;
 };
 
 

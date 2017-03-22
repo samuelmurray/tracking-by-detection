@@ -12,6 +12,14 @@ BUILDDIR = build
 CCFLAGS += `pkg-config --cflags opencv`
 LDFLAGS += `pkg-config --libs opencv`
 
+# dlib
+CCFLAGS += `pkg-config --cflags dlib-1`
+LDFLAGS += `pkg-config --libs dlib-1`
+
+# openblas
+CCFLAGS += `pkg-config --cflags openblas`
+LDFLAGS += `pkg-config --libs openblas`
+
 export PKG_CONFIG_PATH := ../config:$(PKG_CONFIG_PATH)
 
 # Eigen
@@ -42,6 +50,8 @@ NCSOURCES = $(filter-out $(SOURCEDIR)/BBDetector.cpp, $(SOURCES))
 NCOBJECTS = $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(NCSOURCES))
 NCTARGET = ncmain.out
 NCLDFLAGS = `pkg-config --libs opencv`
+NCLDFLAGS += `pkg-config --libs dlib-1`
+NCLDFLAGS += `pkg-config --libs openblas`
 
 
 COMPILE = $(CC) $(DEPFLAGS) $(CCFLAGS) -c

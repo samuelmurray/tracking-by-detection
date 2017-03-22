@@ -1,8 +1,6 @@
 #include "Tracker.h"
 
-Tracker::Tracker(Detector *detector) :
-        detector(detector) {}
+Tracker::Tracker(std::shared_ptr<Detector> detector)
+        : detector(detector) {}
 
-Tracker::~Tracker() {
-    delete detector;
-}
+Tracker::~Tracker() {}

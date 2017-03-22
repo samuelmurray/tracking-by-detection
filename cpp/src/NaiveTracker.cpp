@@ -12,9 +12,9 @@ using std::string;
 // Constructors
 
 NaiveTracker::NaiveTracker()
-        : NaiveTracker(new NaiveDetector()) {}
+        : NaiveTracker(std::shared_ptr<NaiveDetector>(new NaiveDetector())) {}
 
-NaiveTracker::NaiveTracker(Detector *detector)
+NaiveTracker::NaiveTracker(std::shared_ptr<Detector> detector)
         : Tracker(detector) {}
 
 // Methods

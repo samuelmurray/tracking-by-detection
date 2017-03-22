@@ -5,9 +5,15 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <dlib/matrix.h>
+#include <dlib/optimization.h>
 
 #include "Tracker.h"
 #include "NaiveTracker.h"
+#include "KalmanTracker.h"
+
+using std::cout;
+using std::endl;
 
 void tracking() {
     using namespace cv;
@@ -15,7 +21,7 @@ void tracking() {
     std::string imagePath;
 
     std::cout << "Give the path to an image, or type '0' to exit\n";
-    Tracker *tracker = new NaiveTracker();
+    Tracker *tracker = new KalmanTracker();
     while (std::cin >> imagePath) {
         if (imagePath == "0") {
             return;
@@ -34,7 +40,22 @@ void tracking() {
     }
 }
 
+void tracking2() {
+    using namespace cv;
+    std::string imagePath = "../data/test.png";
+    Mat image = imread(imagePath, 1);
+    Tracker *tracker = new KalmanTracker();
+    if (!image.data) {
+        std::cout << "Could not load image " << imagePath << std::endl;
+    } else {
+        std::vector<Detection> ret = tracker->track(image);
+        for (auto a : ret) {
+            std::cout << a << std::endl;
+        }
+    }
+}
+
 int main(int argc, char **argv) {
-    tracking();
+    tracking2();
     return 0;
 }

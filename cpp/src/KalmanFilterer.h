@@ -3,13 +3,15 @@
 
 
 #include <vector>
-#include "KalmanFilter.h"
+#include <dlib/matrix.h>
+#include <dlib/filtering.h>
 #include "BoundingBox.h"
+#include "Detection.h"
 
 class KalmanFilterer {
 public:
-    static const int numStates; // [x, y, area, ratio, vx, vy, area_change]
-    static const int numMeas; // [x, y, area, ratio]
+    static constexpr int numStates = 7; // [x, y, area, ratio, vx, vy, area_change]
+    static constexpr int numMeas = 4; // [x, y, area, ratio]
     static const double dt;
     static int count; // TODO: This should be a dict from class to count
 
@@ -33,15 +35,24 @@ public:
      */
     BoundingBox getState() const;
 
-    static BoundingBox stateToBoundingBox(const Eigen::VectorXd &state);
+    Detection detection() const;
 
-    static Eigen::VectorXd boundingBoxToMeas(const BoundingBox &box);
+    static BoundingBox stateToBoundingBox(const dlib::matrix<double, numStates, 1> &state);
+
+    static dlib::matrix<double, numMeas, 1> boundingBoxToMeas(const BoundingBox &box);
 
 private:
-    KalmanFilter *filter;
+    std::shared_ptr<dlib::kalman_filter<numStates, numMeas>> filter;
     std::vector<BoundingBox> history;
     int ID;
     int timeSinceUpdate = 0;
+public:
+    int getHitStreak() const;
+
+public:
+    int getTimeSinceUpdate() const;
+
+private:
     int hits = 0;
     int hitStreak = 0;
     int age = 0;
