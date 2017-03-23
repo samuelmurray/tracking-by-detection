@@ -14,11 +14,11 @@ RandomTracker::RandomTracker()
 // Methods
 
 vector<Tracking> RandomTracker::track(const cv::Mat &image) {
-    vector<Detection> boundingBoxes = detector->detect(image);
+    vector<Detection> detections = detector->detect(image);
     vector<Tracking> associatedDetections;
     map<string, int> classCount;
-    for (auto it : boundingBoxes) {
-        Tracking d(it, classCount[it.className]++);
+    for (auto det : detections) {
+        Tracking d(det.className, classCount[det.className]++, det.bb);
         associatedDetections.push_back(d);
     }
     return associatedDetections;

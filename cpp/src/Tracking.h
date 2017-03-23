@@ -2,17 +2,15 @@
 #define CPP_TRACKING_H
 
 
-#include <string>
 #include <ostream>
-#include "Detection.h"
+#include "BoundingBox.h"
 
 struct Tracking {
-    Tracking(const Detection &detection, int ID);
+    Tracking(const std::string &className, int ID, const BoundingBox &bb);
 
-    Tracking(const std::string &className, int cx, int cy, int width, int height, int ID);
-
-    Detection detection;
-    int ID;
+    const std::string className;
+    const int ID;
+    const BoundingBox bb;
 };
 
 std::ostream &operator<<(std::ostream &os, const Tracking &t);

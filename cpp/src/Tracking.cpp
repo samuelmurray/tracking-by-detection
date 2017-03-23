@@ -1,12 +1,13 @@
 #include "Tracking.h"
 
-Tracking::Tracking(const Detection &detection, int ID)
-        : detection(detection), ID(ID) {}
+// Constructors
 
-Tracking::Tracking(const std::string &className, int cx, int cy, int width, int height, int ID)
-        : detection(Detection(className, cx, cy, width, height)), ID(ID) {}
+Tracking::Tracking(const std::string &className, int ID, const BoundingBox &bb)
+        : className(className), ID(ID), bb(bb) {}
+
+// Functions
 
 std::ostream &operator<<(std::ostream &os, const Tracking &t) {
-    os << t.detection << " ID: " << t.ID;
+    os << t.className << " ID: " << t.ID << " " << t.bb;
     return os;
 }

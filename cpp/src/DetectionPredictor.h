@@ -41,14 +41,15 @@ public:
 
     int getTimeSinceUpdate() const;
 
-    static Detection stateToDetection(const dlib::matrix<double, numStates, 1> &state);
+    static BoundingBox stateToBoundingBox(const dlib::matrix<double, numStates, 1> &state);
 
-    static dlib::matrix<double, numMeas, 1> detectionToMeas(const Detection &det);
+    static dlib::matrix<double, numMeas, 1> boundingBoxToMeas(const BoundingBox &bb);
 
 private:
     std::shared_ptr<dlib::kalman_filter<numStates, numMeas>> filter;
     std::vector<Detection> history;
-    int ID;
+    const int ID;
+    const std::string className;
     int timeSinceUpdate = 0;
     int hits = 0;
     int hitStreak = 0;
