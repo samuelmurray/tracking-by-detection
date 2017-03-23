@@ -3,6 +3,8 @@
 #include <dlib/optimization.h>
 
 using std::vector;
+using std::cout;
+using std::endl;
 
 const int MCSORT::maxAge = 1;
 const int MCSORT::minHits = 3;
@@ -16,30 +18,33 @@ MCSORT::MCSORT()
 
 vector<Tracking> MCSORT::track(const cv::Mat &image) {
     frameCount++;
-    vector<Detection> boundingBoxes = detector->detect(image);
-    vector<Detection> predictions;
-    for (auto predictor : predictors) {
-        predictor.predict();
+    vector<Detection> detections = detector->detect(image);
+    cout << "---DETECTIONS---" << endl;
+    for (auto it = detections.begin(); it != detections.end(); ++it) {
+        cout << *it << endl;
     }
-    std::cout << "\nPREDICTED\n";
-    Association association = associateDetectionsToTrackers(boundingBoxes);
 
-    std::cout << "\nASSOCIATED\n";
+    cout << "---PREDICTIONS---" << endl;
+    for (auto it = predictors.begin(); it != predictors.end(); ++it) {
+        cout << it->getCurrentPrediction() << endl;
+    }
+
+    Association association = associateDetectionsToPredictors(detections);
+    cout << endl << "Number of matches and unmatched detections and predictors:" << endl;
+    cout << association.matches.size() << " " <<
+         association.unmatchedDetections.size() << " " <<
+         association.unmatchedPredictors.size() << endl;
 
     // Update matched trackers with assigned detections
     for (auto match : association.matches) {
-        predictors.at(match.second).update(boundingBoxes.at(match.first));
+        predictors.at(match.second).update(detections.at(match.first));
     }
-    std::cout << "\nUPDATED\n";
 
     // Create and initialise new trackers for unmatched detections
-    for (auto detection : association.unmatchedDetections) {
-        DetectionPredictor predictor(detection);
-        std::cout << "\nWUT\n";
-        predictors.push_back(predictor);
-        std::cout << "\nPUSHED\n";
+    for (auto id : association.unmatchedDetections) {
+        DetectionPredictor predictor(detections.at(id));
+        predictors.push_back(std::move(predictor));
     }
-    std::cout << "\nINITIALIZED\n";
 
     // Remove predictors that have been inactive for too long
     /*
@@ -52,40 +57,44 @@ vector<Tracking> MCSORT::track(const cv::Mat &image) {
 
     // Add the tracked objects
     vector<Tracking> trackings;
-    for (auto predictor : predictors) {
-        if (predictor.getTimeSinceUpdate() < 1 &&
-            (predictor.getHitStreak() >= minHits || frameCount <= minHits)) {
-            trackings.push_back(predictor.getTracking());
+    for (auto it = predictors.begin(); it != predictors.end(); ++it) {
+        if (it->getTimeSinceUpdate() < 1 &&
+            (it->getHitStreak() >= minHits || frameCount <= minHits)) {
+            trackings.push_back(it->getTracking());
         }
     }
-
     return trackings;
 }
 
-MCSORT::Association MCSORT::associateDetectionsToTrackers(const vector<Detection> &detections) {
+MCSORT::Association MCSORT::associateDetectionsToPredictors(const vector<Detection> &detections) {
     double IOU_THRESHOLD = 0.3;
     int doublePrecision = 100;
-    // TODO: Implement
+    std::vector<std::pair<int, int>> matches;
+    vector<int> unmatchedDetections;
+    vector<int> unmatchedPredictors;
+
     if (predictors.empty()) {
-        return MCSORT::Association{vector<std::pair<int, int>>(), detections, vector<DetectionPredictor>()};
+        cout << "No predictors, creating..." << endl;
+        for (int i = 0; i < detections.size(); ++i)
+            unmatchedDetections.push_back(i);
+        return MCSORT::Association{matches, unmatchedDetections, unmatchedPredictors};
     }
     dlib::matrix<int> cost(detections.size(), predictors.size());
     for (size_t row = 0; row < detections.size(); ++row) {
         for (size_t col = 0; col < predictors.size(); ++col) {
-            cost(row, col) = int(doublePrecision * Detection::iou(detections.at(row),
-                                                                  predictors.at(col).getCurrentPrediction()));
+            cost(row, col) = int(doublePrecision *
+                                 Detection::iou(detections.at(row), predictors.at(col).getCurrentPrediction()));
         }
     }
+    // Pad with 0s to make square
     if (cost.nr() > cost.nc()) {
         cost = dlib::join_rows(cost, dlib::zeros_matrix<int>(1, cost.nr() - cost.nc()));
     } else if (cost.nc() > cost.nr()) {
         cost = dlib::join_cols(cost, dlib::zeros_matrix<int>(cost.nc() - cost.nr(), 1));
     }
+    cout << cost;
 
     vector<long> assignment = dlib::max_cost_assignment(cost);
-    std::vector<std::pair<int, int>> matches;
-    vector<Detection> unmatchedDetections;
-    vector<DetectionPredictor> unmatchedPredictors;
     /* Maybe not needed? Matches to "padded" detections/predictors should have value 0
     for (int d = 0; d < assignment.size(); ++d) {
         if (assignment[d] >= predictors.size()) {
@@ -98,8 +107,8 @@ MCSORT::Association MCSORT::associateDetectionsToTrackers(const vector<Detection
      */
     for (int d = 0; d < assignment.size(); ++d) {
         if (cost(d, assignment[d]) < IOU_THRESHOLD * doublePrecision) {
-            unmatchedDetections.push_back(Detection(detections.at(d)));
-            unmatchedPredictors.push_back(DetectionPredictor(predictors.at(assignment[d])));
+            unmatchedDetections.push_back(d);
+            unmatchedPredictors.push_back(int(assignment[d]));
         } else {
             matches.push_back(std::pair<int, int>(d, assignment[d]));
         }

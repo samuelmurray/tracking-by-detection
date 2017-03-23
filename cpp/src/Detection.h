@@ -8,6 +8,10 @@
 struct Detection {
     Detection(const std::string &className, const BoundingBox &bb);
 
+    Detection(const Detection &rhs);
+
+    Detection(Detection &&rhs);
+
     static double iou(const Detection &a, const Detection &b);
 
     const std::string className;

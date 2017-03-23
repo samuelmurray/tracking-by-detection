@@ -23,12 +23,12 @@ private:
     std::vector<DetectionPredictor> predictors = std::vector<DetectionPredictor>();
     int frameCount = 1;
 
-    Association associateDetectionsToTrackers(const std::vector<Detection> &detections);
+    Association associateDetectionsToPredictors(const std::vector<Detection> &detections);
 
     struct Association {
         std::vector<std::pair<int, int>> matches;
-        std::vector<Detection> unmatchedDetections;
-        std::vector<DetectionPredictor> unmatchedPredictors;
+        std::vector<int> unmatchedDetections;
+        std::vector<int> unmatchedPredictors;
     };
 };
 

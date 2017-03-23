@@ -48,11 +48,23 @@ void tracking2() {
     if (!image.data) {
         std::cout << "Could not load image " << imagePath << std::endl;
     } else {
-        std::vector<Tracking> ret = tracker->track(image);
-        for (auto a : ret) {
-            std::cout << a << std::endl;
+        std::vector<Tracking> trackings;
+        for (int i = 0; i < 5; ++i) {
+            trackings = tracker->track(image);
+            std::cout << "---TRACKINGS---" << std::endl;
+            for (auto a : trackings) {
+                std::cout << a << std::endl;
+            }
+            std::cout << std::endl;
         }
     }
+}
+
+void bb() {
+    BoundingBox a(5, 5, 10, 8);
+    std::cout << a.x1() << "," << a.y1() << "-" << a.x2() << "," << a.y2() << std::endl;
+    BoundingBox b(5, 6, 9, 2);
+    std::cout << BoundingBox::iou(a, b);
 }
 
 int main(int argc, char **argv) {

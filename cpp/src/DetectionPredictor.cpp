@@ -61,6 +61,12 @@ DetectionPredictor::DetectionPredictor(const Detection &initialState)
     filter->update(x0);
 }
 
+DetectionPredictor::DetectionPredictor(DetectionPredictor &&rhs)
+        : filter(std::move(rhs.filter)),
+          history(std::move(rhs.history)),
+          ID(rhs.ID),
+          className(std::move(rhs.className)){}
+
 DetectionPredictor::~DetectionPredictor() {}
 
 // Methods
@@ -110,7 +116,7 @@ int DetectionPredictor::getHitStreak() const {
 
 dlib::matrix<double, DetectionPredictor::numMeas, 1> DetectionPredictor::boundingBoxToMeas(const BoundingBox &bb) {
     dlib::matrix<double, DetectionPredictor::numMeas, 1> z;
-    z = bb.cx, bb.cy, bb.width * bb.height, bb.width / bb.height;
+    z = bb.cx, bb.cy, bb.width * bb.height, bb.width / double(bb.height);
     return z;
 }
 

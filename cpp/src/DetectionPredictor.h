@@ -18,6 +18,10 @@ public:
 public:
     DetectionPredictor(const Detection &initialState);
 
+    DetectionPredictor(const DetectionPredictor &rhs) = delete;
+
+    DetectionPredictor(DetectionPredictor &&rhs);
+
     virtual ~DetectionPredictor();
 
     /**
