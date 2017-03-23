@@ -1,5 +1,12 @@
 #include "Detector.h"
+#include "DetectorInputException.h"
 
-Detector::Detector() {}
+// Methods
 
-Detector::~Detector() {}
+std::vector<Detection> Detector::detect(const cv::Mat &image) {
+    throw DetectorInputException();
+}
+
+std::vector<Detection> Detector::detect() {
+    throw DetectorInputException();
+}

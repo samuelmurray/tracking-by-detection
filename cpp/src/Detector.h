@@ -8,15 +8,17 @@
 
 class Detector {
 public:
-    Detector();
+    Detector() = default;
 
-    virtual ~Detector();
+    virtual ~Detector() = default;
 
     Detector(Detector &&rhs) = default;
 
     Detector &operator=(Detector &&rhs) = default;
 
-    virtual std::vector<Detection> detect(const cv::Mat &image) = 0;
+    virtual std::vector<Detection> detect(const cv::Mat &image);
+
+    virtual std::vector<Detection> detect();
 
     // Prevent copying
     Detector(const Detector &) = delete;

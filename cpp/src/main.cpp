@@ -11,63 +11,66 @@
 #include "Tracker.h"
 #include "RandomTracker.h"
 #include "MCSORT.h"
+#include "DetectionFileParser.h"
 
+
+using namespace std;
+
+/*
+using std::vector
 using std::cout;
+using std::cin;
 using std::endl;
+using std::string;
+ */
 
 void tracking() {
     using namespace cv;
     Mat image;
-    std::string imagePath;
+    string imagePath;
 
-    std::cout << "Give the path to an image, or type '0' to exit\n";
+    cout << "Give the path to an image, or type '0' to exit\n";
     Tracker *tracker = new MCSORT();
-    while (std::cin >> imagePath) {
+    while (cin >> imagePath) {
         if (imagePath == "0") {
             return;
         }
 
         image = imread(imagePath, 1);
         if (!image.data) {
-            std::cout << "Could not load image " << imagePath << std::endl;
+            cout << "Could not load image " << imagePath << endl;
         } else {
-            std::vector<Tracking> ret = tracker->track(image);
+            vector<Tracking> ret = tracker->track(image);
             for (auto a : ret) {
-                std::cout << a << std::endl;
+                cout << a << endl;
             }
         }
-        std::cout << "\nGive more images, or type '0' to exit\n";
+        cout << "\nGive more images, or type '0' to exit\n";
     }
 }
 
 void tracking2() {
     using namespace cv;
-    std::string imagePath = "../data/test.png";
+    string imagePath = "../data/test.png";
     Mat image = imread(imagePath, 1);
     Tracker *tracker = new MCSORT();
     if (!image.data) {
-        std::cout << "Could not load image " << imagePath << std::endl;
+        cout << "Could not load image " << imagePath << endl;
     } else {
-        std::vector<Tracking> trackings;
+        vector<Tracking> trackings;
         for (int i = 0; i < 5; ++i) {
             trackings = tracker->track(image);
-            std::cout << "---TRACKINGS---" << std::endl;
+            cout << "---TRACKINGS---" << endl;
             for (auto a : trackings) {
-                std::cout << a << std::endl;
+                cout << a << endl;
             }
-            std::cout << std::endl;
+            cout << endl;
         }
     }
 }
 
-void bb() {
-    BoundingBox a(5, 5, 10, 8);
-    std::cout << a.x1() << "," << a.y1() << "-" << a.x2() << "," << a.y2() << std::endl;
-    BoundingBox b(5, 6, 9, 2);
-    std::cout << BoundingBox::iou(a, b);
-}
 
 int main(int argc, char **argv) {
-    tracking2();
+    parsertest();
     return 0;
 }

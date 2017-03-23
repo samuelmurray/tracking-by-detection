@@ -14,6 +14,9 @@ const int MCSORT::minHits = 3;
 MCSORT::MCSORT()
         : Tracker(std::make_shared<RandomDetector>(RandomDetector())) {}
 
+MCSORT::MCSORT(const std::shared_ptr<Detector> &detector)
+        : Tracker(detector) {}
+
 // Methods
 
 vector<Tracking> MCSORT::track(const cv::Mat &image) {

@@ -1,5 +1,7 @@
 #include "RandomDetector.h"
 
+using std::vector;
+
 // Constructors
 
 RandomDetector::RandomDetector() : Detector() {}
@@ -13,8 +15,8 @@ RandomDetector &RandomDetector::operator=(RandomDetector &&rhs) {
 
 // Methods
 
-std::vector<Detection> RandomDetector::detect(const cv::Mat &image) {
-    std::vector<Detection> detections;
+vector<Detection> RandomDetector::detect(const cv::Mat &image) {
+    vector<Detection> detections;
     detections.push_back(Detection("test_class",
                                    BoundingBox(
                                            int(0.1 * image.cols) + (rand() % 10 - 5),
@@ -34,4 +36,8 @@ std::vector<Detection> RandomDetector::detect(const cv::Mat &image) {
                                            90, 30
                                    )));
     return detections;
+}
+
+vector<Detection> RandomDetector::detect() {
+    return Detector::detect();
 }

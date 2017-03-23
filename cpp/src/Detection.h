@@ -12,6 +12,10 @@ struct Detection {
 
     Detection(Detection &&rhs);
 
+    Detection &operator=(const Detection &rhs) = delete;
+
+    Detection &operator=(Detection &&rhs) = delete;
+
     static double iou(const Detection &a, const Detection &b);
 
     const std::string className;

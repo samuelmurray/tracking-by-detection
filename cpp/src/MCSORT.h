@@ -17,6 +17,8 @@ public:
 public:
     MCSORT();
 
+    MCSORT(const std::shared_ptr<Detector> &detector);
+
     std::vector<Tracking> track(const cv::Mat &image) override;
 
 private:
