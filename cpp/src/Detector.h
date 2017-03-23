@@ -2,9 +2,9 @@
 #define CPP_DETECTOR_H
 
 
-#include <opencv2/core/core.hpp>
+#include <opencv2/core/mat.hpp>
 #include <vector>
-#include "BoundingBox.h"
+#include "Detection.h"
 
 class Detector {
 public:
@@ -12,15 +12,16 @@ public:
 
     virtual ~Detector();
 
+    Detector(Detector &&rhs) = default;
+
+    Detector &operator=(Detector &&rhs) = default;
+
+    virtual std::vector<Detection> detect(const cv::Mat &image) = 0;
+
+    // Prevent copying
     Detector(const Detector &) = delete;
 
-    Detector(const Detector &&) = delete;
-
     Detector &operator=(const Detector &) = delete;
-
-    Detector &operator=(const Detector &&) = delete;
-
-    virtual std::vector<BoundingBox> detect(const cv::Mat &image) = 0;
 };
 
 

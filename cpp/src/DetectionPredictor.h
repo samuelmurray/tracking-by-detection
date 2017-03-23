@@ -1,14 +1,14 @@
-#ifndef CPP_KALMANFILTERER_H
-#define CPP_KALMANFILTERER_H
+#ifndef CPP_DETECTIONPREDICTOR_H
+#define CPP_DETECTIONPREDICTOR_H
 
 
 #include <vector>
 #include <dlib/matrix.h>
 #include <dlib/filtering.h>
-#include "BoundingBox.h"
 #include "Detection.h"
+#include "Tracking.h"
 
-class KalmanFilterer {
+class DetectionPredictor {
 public:
     static constexpr int numStates = 7; // [x, y, area, ratio, vx, vy, area_change]
     static constexpr int numMeas = 4; // [x, y, area, ratio]
@@ -16,47 +16,44 @@ public:
     static int count; // TODO: This should be a dict from class to count
 
 public:
-    KalmanFilterer(BoundingBox initialState);
+    DetectionPredictor(const Detection &initialState);
 
-    virtual ~KalmanFilterer();
+    virtual ~DetectionPredictor();
 
     /**
      * Updates the state vector with observed bbox.
      */
-    void update(BoundingBox box);
+    void update(const Detection &det);
 
     /**
      * Advances the state vector and returns the predicted bounding box estimate.
      */
-    BoundingBox predict();
+    Detection predict();
 
     /**
      * Returns the current bounding box estimate.
      */
-    BoundingBox getState() const;
+    Detection getCurrentPrediction() const;
 
-    Detection detection() const;
+    Tracking getTracking() const;
 
-    static BoundingBox stateToBoundingBox(const dlib::matrix<double, numStates, 1> &state);
+    int getHitStreak() const;
 
-    static dlib::matrix<double, numMeas, 1> boundingBoxToMeas(const BoundingBox &box);
+    int getTimeSinceUpdate() const;
+
+    static Detection stateToDetection(const dlib::matrix<double, numStates, 1> &state);
+
+    static dlib::matrix<double, numMeas, 1> detectionToMeas(const Detection &det);
 
 private:
     std::shared_ptr<dlib::kalman_filter<numStates, numMeas>> filter;
-    std::vector<BoundingBox> history;
+    std::vector<Detection> history;
     int ID;
     int timeSinceUpdate = 0;
-public:
-    int getHitStreak() const;
-
-public:
-    int getTimeSinceUpdate() const;
-
-private:
     int hits = 0;
     int hitStreak = 0;
     int age = 0;
 };
 
 
-#endif //CPP_KALMANFILTERER_H
+#endif //CPP_DETECTIONPREDICTOR_H

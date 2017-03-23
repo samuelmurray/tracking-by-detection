@@ -9,8 +9,8 @@
 #include <dlib/optimization.h>
 
 #include "Tracker.h"
-#include "NaiveTracker.h"
-#include "KalmanTracker.h"
+#include "RandomTracker.h"
+#include "MCSORT.h"
 
 using std::cout;
 using std::endl;
@@ -21,7 +21,7 @@ void tracking() {
     std::string imagePath;
 
     std::cout << "Give the path to an image, or type '0' to exit\n";
-    Tracker *tracker = new KalmanTracker();
+    Tracker *tracker = new MCSORT();
     while (std::cin >> imagePath) {
         if (imagePath == "0") {
             return;
@@ -31,7 +31,7 @@ void tracking() {
         if (!image.data) {
             std::cout << "Could not load image " << imagePath << std::endl;
         } else {
-            std::vector<Detection> ret = tracker->track(image);
+            std::vector<Tracking> ret = tracker->track(image);
             for (auto a : ret) {
                 std::cout << a << std::endl;
             }
@@ -44,11 +44,11 @@ void tracking2() {
     using namespace cv;
     std::string imagePath = "../data/test.png";
     Mat image = imread(imagePath, 1);
-    Tracker *tracker = new KalmanTracker();
+    Tracker *tracker = new MCSORT();
     if (!image.data) {
         std::cout << "Could not load image " << imagePath << std::endl;
     } else {
-        std::vector<Detection> ret = tracker->track(image);
+        std::vector<Tracking> ret = tracker->track(image);
         for (auto a : ret) {
             std::cout << a << std::endl;
         }

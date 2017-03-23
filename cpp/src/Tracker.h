@@ -6,14 +6,17 @@
 #include <vector>
 
 #include "Detector.h"
-#include "Detection.h"
+#include "Tracking.h"
 
 class Tracker {
 public:
-    Tracker(std::shared_ptr<Detector>);
+    Tracker(const std::shared_ptr<Detector> &detector);
 
     virtual ~Tracker();
 
+    virtual std::vector<Tracking> track(const cv::Mat &image) = 0;
+
+    // Prevent copying and moving
     Tracker(const Tracker &) = delete;
 
     Tracker(const Tracker &&) = delete;
@@ -22,10 +25,8 @@ public:
 
     Tracker &operator=(const Tracker &&) = delete;
 
-    virtual std::vector<Detection> track(cv::Mat mat) = 0;
-
 protected:
-    std::shared_ptr<Detector> detector;
+    const std::shared_ptr<Detector> detector;
 };
 
 

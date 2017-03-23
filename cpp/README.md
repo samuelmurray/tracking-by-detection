@@ -21,10 +21,10 @@ $ ./ncmain.out
 ## Integrate in other projects
 To integrate the tracker in other projects, you need the following files:
 ```
-Detection.*
+Tracking.*
 Detector.*
 BBDetector.* (If Caffe)
-NaiveDetector.* (If not Caffe)
+RandomDetector.* (If not Caffe)
 Tracker.*
-NaiveTracker.*
+RandomTracker.*
 ```
