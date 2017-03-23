@@ -4,6 +4,7 @@
 
 #include "Tracker.h"
 #include "DetectionPredictor.h"
+#include "Detector.h"
 
 class MCSORT;
 
@@ -21,7 +22,10 @@ public:
 
     std::vector<Tracking> track(const cv::Mat &image) override;
 
+    std::vector<Tracking> track(const std::vector<Detection> &detections) override;
+
 private:
+    const std::shared_ptr<Detector> detector;
     std::vector<DetectionPredictor> predictors = std::vector<DetectionPredictor>();
     int frameCount = 1;
 

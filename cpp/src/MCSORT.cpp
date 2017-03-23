@@ -1,5 +1,6 @@
 #include "MCSORT.h"
 #include "RandomDetector.h"
+#include "NoAssociatedDetector.h"
 #include <dlib/optimization.h>
 
 using std::vector;
@@ -12,16 +13,24 @@ const int MCSORT::minHits = 3;
 // Constructors
 
 MCSORT::MCSORT()
-        : Tracker(std::make_shared<RandomDetector>(RandomDetector())) {}
+        : Tracker() {}
 
 MCSORT::MCSORT(const std::shared_ptr<Detector> &detector)
-        : Tracker(detector) {}
+        : Tracker(), detector(detector) {}
 
 // Methods
 
-vector<Tracking> MCSORT::track(const cv::Mat &image) {
-    frameCount++;
+std::vector<Tracking> MCSORT::track(const cv::Mat &image) {
+    if (!detector) {
+        throw NoAssociatedDetector();
+    }
     vector<Detection> detections = detector->detect(image);
+    return track(detections);
+}
+
+vector<Tracking> MCSORT::track(const vector<Detection> &detections) {
+    frameCount++;
+
     cout << "---DETECTIONS---" << endl;
     for (auto it = detections.begin(); it != detections.end(); ++it) {
         cout << *it << endl;

@@ -56,10 +56,10 @@ void tracking2() {
     if (!image.data) {
         cout << "Could not load image " << imagePath << endl;
     } else {
-        Tracker *tracker = new MCSORT();
+        MCSORT tracker;
         vector<Tracking> trackings;
         for (int i = 0; i < 5; ++i) {
-            trackings = tracker->track(image);
+            trackings = tracker.track(image);
             cout << "---TRACKINGS---" << endl;
             for (auto a : trackings) {
                 cout << a << endl;
@@ -75,10 +75,10 @@ void tracking3() {
     if (!detectionFile.is_open()) {
         cout << "Could not load file " << filePath << endl;
     } else {
-        Tracker *tracker = new MCSORT(std::make_shared(DetectionFileParser(detectionFile)));
+        MCSORT tracker(std::make_shared<Detector>(DetectionFileParser(detectionFile)));
         vector<Tracking> trackings;
         for (int i = 0; i < 5; ++i) {
-            trackings = tracker->track();
+            trackings = tracker.track(cv::Mat()); // FIXME: We need to input detections here instead
             cout << "---TRACKINGS---" << endl;
             for (auto a : trackings) {
                 cout << a << endl;

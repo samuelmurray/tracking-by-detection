@@ -3,12 +3,18 @@
 
 
 #include "Tracker.h"
+#include "Detector.h"
 
 class RandomTracker : public Tracker {
 public:
     RandomTracker();
 
     std::vector<Tracking> track(const cv::Mat &image) override;
+
+    std::vector<Tracking> track(const std::vector<Detection> &detections) override;
+
+private:
+    const std::shared_ptr<Detector> detector;
 };
 
 
