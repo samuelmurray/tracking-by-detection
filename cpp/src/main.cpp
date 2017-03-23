@@ -53,10 +53,10 @@ void tracking2() {
     using namespace cv;
     string imagePath = "../data/test.png";
     Mat image = imread(imagePath, 1);
-    Tracker *tracker = new MCSORT();
     if (!image.data) {
         cout << "Could not load image " << imagePath << endl;
     } else {
+        Tracker *tracker = new MCSORT();
         vector<Tracking> trackings;
         for (int i = 0; i < 5; ++i) {
             trackings = tracker->track(image);
@@ -69,8 +69,27 @@ void tracking2() {
     }
 }
 
+void tracking3() {
+    string filePath = "../data/detections.txt";
+    ifstream detectionFile(filePath);
+    if (!detectionFile.is_open()) {
+        cout << "Could not load file " << filePath << endl;
+    } else {
+        Tracker *tracker = new MCSORT(std::make_shared(DetectionFileParser(detectionFile)));
+        vector<Tracking> trackings;
+        for (int i = 0; i < 5; ++i) {
+            trackings = tracker->track();
+            cout << "---TRACKINGS---" << endl;
+            for (auto a : trackings) {
+                cout << a << endl;
+            }
+            cout << endl;
+        }
+    }
+}
+
 
 int main(int argc, char **argv) {
-    parsertest();
+    tracking3();
     return 0;
 }
