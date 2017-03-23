@@ -14,10 +14,10 @@ struct BoundingBox {
 
     // (x1,y1) - top left
     // (x2,y2) - bottom right
-    inline int x1() const { return cx - width / 2; }
-    inline int y1() const { return cy + height / 2; }
-    inline int x2() const { return cx + width / 2; }
-    inline int y2() const { return cy - height / 2; }
+    inline int x1() const { return int(cx - width / 2.); }
+    inline int y1() const { return int(cy - height / 2.); }
+    inline int x2() const { return int(cx + width / 2.); }
+    inline int y2() const { return int(cy + height / 2.); }
     inline int area() const { return width * height; }
 
     static double iou(const BoundingBox &a, const BoundingBox &b);

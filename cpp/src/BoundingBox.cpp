@@ -1,6 +1,4 @@
 #include "BoundingBox.h"
-#include <algorithm>
-
 
 // Constructors
 
