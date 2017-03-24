@@ -33,7 +33,7 @@ public:
     /**
      * Advances the state vector.
      */
-    void advance();
+    void update();
 
     /**
      * Updates the state vector with observed bbox.

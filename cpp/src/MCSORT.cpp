@@ -38,7 +38,6 @@ vector<Tracking> MCSORT::track(const vector<Detection> &detections) {
 
     cout << "---PREDICTIONS---" << endl;
     for (auto it = predictors.begin(); it != predictors.end(); ++it) {
-        it->advance();
         cout << "Tracker " << it->getID() << " " << it->getPredictedNextDetection() << endl;
     }
 
@@ -51,6 +50,10 @@ vector<Tracking> MCSORT::track(const vector<Detection> &detections) {
     // Update matched predictors with assigned detections
     for (auto match : association.matches) {
         predictors.at(match.second).update(detections.at(match.first));
+    }
+
+    for (auto p : association.unmatchedPredictors) {
+        predictors.at(p).update();
     }
 
     // Create and initialise new predictors for unmatched detections

@@ -82,13 +82,10 @@ DetectionPredictor &DetectionPredictor::operator=(DetectionPredictor &&rhs) {
 
 // Methods
 
-void DetectionPredictor::advance() {
-    if (filter->get_current_state()(6) + filter->get_current_state()(2) <= 0) {
-        // filter->get_current_state()(6) = 0; // TODO
-    }
-    if (timeSinceUpdate++ > 0) {
-        hitStreak = 0;
-    }
+void DetectionPredictor::update() {
+    timeSinceUpdate++;
+    hitStreak = 0;
+    filter->update();
 }
 
 void DetectionPredictor::update(const Detection &det) {
@@ -128,7 +125,8 @@ dlib::matrix<double, DetectionPredictor::numMeas, 1> DetectionPredictor::boundin
 }
 
 BoundingBox DetectionPredictor::stateToBoundingBox(const dlib::matrix<double, numStates, 1> &state) {
-    double width = std::sqrt(state(2) * state(3));
-    double height = state(2) / width;
+    double rectifiedArea = std::max(state(2), 0.);
+    double width = std::sqrt(rectifiedArea * state(3));
+    double height = rectifiedArea / width;
     return BoundingBox(int(state(0)), int(state(1)), int(width), int(height));
 }
