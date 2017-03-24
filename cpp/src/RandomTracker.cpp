@@ -1,7 +1,9 @@
 #include "RandomTracker.h"
-#include <map>
+
 #include "RandomDetector.h"
 #include "NoAssociatedDetector.h"
+
+#include <map>
 
 using std::vector;
 using std::map;
@@ -10,7 +12,7 @@ using std::string;
 // Constructors
 
 RandomTracker::RandomTracker()
-        : Tracker(), detector(std::make_shared<RandomDetector>(RandomDetector())) {}
+        : detector(std::make_shared<RandomDetector>(RandomDetector())) {}
 
 // Methods
 

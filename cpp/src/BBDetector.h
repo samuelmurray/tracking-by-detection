@@ -2,12 +2,13 @@
 #define CPP_BBDETECTOR_H
 
 
+#include "Detector.h"
+
 #include <caffe/caffe.hpp>
-#include <opencv2/core/core.hpp>
+#include <opencv2/core/Mat.hpp>
+
 #include <string>
 #include <memory>
-
-#include "Detector.h"
 
 class BBDetector : public Detector {
 public:

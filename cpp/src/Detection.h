@@ -2,8 +2,9 @@
 #define CPP_DETECTION_H
 
 
-#include <ostream>
 #include "BoundingBox.h"
+
+#include <ostream>
 
 struct Detection {
     Detection(const std::string &className, const BoundingBox &bb);

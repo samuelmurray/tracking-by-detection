@@ -1,18 +1,17 @@
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-
-#include <iostream>
-#include <string>
-#include <vector>
-#include <dlib/matrix.h>
-#include <dlib/optimization.h>
-
 #include "Tracker.h"
 #include "RandomTracker.h"
 #include "MCSORT.h"
 #include "DetectionFileParser.h"
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <dlib/matrix.h>
+#include <dlib/optimization.h>
+
+#include <iostream>
+#include <string>
+#include <vector>
 
 using namespace std;
 
@@ -75,7 +74,7 @@ void tracking3() {
     if (!detectionFile.is_open()) {
         cout << "Could not load file " << filePath << endl;
     } else {
-        MCSORT tracker(std::make_shared<Detector>(DetectionFileParser(detectionFile)));
+        MCSORT tracker;
         vector<Tracking> trackings;
         for (int i = 0; i < 5; ++i) {
             trackings = tracker.track(cv::Mat()); // FIXME: We need to input detections here instead

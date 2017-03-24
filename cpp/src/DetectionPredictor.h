@@ -2,11 +2,13 @@
 #define CPP_DETECTIONPREDICTOR_H
 
 
-#include <vector>
-#include <dlib/matrix.h>
-#include <dlib/filtering.h>
 #include "Detection.h"
 #include "Tracking.h"
+
+#include <dlib/matrix.h>
+#include <dlib/filtering.h>
+
+#include <vector>
 
 class DetectionPredictor {
 public:

@@ -1,6 +1,8 @@
 #include "MCSORT.h"
+
 #include "RandomDetector.h"
 #include "NoAssociatedDetector.h"
+
 #include <dlib/optimization.h>
 
 using std::vector;
@@ -12,11 +14,10 @@ const int MCSORT::minHits = 3;
 
 // Constructors
 
-MCSORT::MCSORT()
-        : Tracker() {}
+MCSORT::MCSORT() {}
 
 MCSORT::MCSORT(const std::shared_ptr<Detector> &detector)
-        : Tracker(), detector(detector) {}
+        : detector(detector) {}
 
 // Methods
 

@@ -3,8 +3,8 @@
 
 
 #include "Tracker.h"
-#include "DetectionPredictor.h"
 #include "Detector.h"
+#include "DetectionPredictor.h"
 
 class MCSORT;
 

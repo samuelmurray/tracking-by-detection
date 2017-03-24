@@ -2,17 +2,18 @@
 #define CPP_TRACKER_H
 
 
-#include <vector>
+#include "Detection.h"
+#include "Tracking.h"
+
 #include <opencv2/core/mat.hpp>
 
-#include "Tracking.h"
-#include "Detection.h"
+#include <vector>
 
 class Tracker {
 public:
-    Tracker();
+    Tracker() = default;
 
-    virtual ~Tracker();
+    virtual ~Tracker() = default;
 
     virtual std::vector<Tracking> track(const cv::Mat &image) = 0;
 

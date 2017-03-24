@@ -2,8 +2,9 @@
 #define CPP_TRACKING_H
 
 
-#include <ostream>
 #include "BoundingBox.h"
+
+#include <ostream>
 
 struct Tracking {
     Tracking(const std::string &className, int ID, const BoundingBox &bb);
