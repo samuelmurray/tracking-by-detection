@@ -13,8 +13,6 @@ public:
     RandomDetector &operator=(RandomDetector &&rhs);
 
     std::vector<Detection> detect(const cv::Mat &image) override;
-
-    std::vector<Detection> detect() override;
 };
 
 

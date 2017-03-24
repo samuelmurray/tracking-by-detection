@@ -37,7 +37,3 @@ vector<Detection> RandomDetector::detect(const cv::Mat &image) {
                                    )));
     return detections;
 }
-
-vector<Detection> RandomDetector::detect() {
-    return Detector::detect();
-}

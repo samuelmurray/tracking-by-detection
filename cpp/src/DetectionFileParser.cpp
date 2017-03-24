@@ -1,15 +1,16 @@
+#include "DetectionFileParser.h"
+
 #include <sstream>
 #include <iostream>
-#include "DetectionFileParser.h"
 
 using std::vector;
 using std::string;
 
-// Constructor
+// Functions
 
-DetectionFileParser::DetectionFileParser(std::ifstream &file)
-        : Detector() {
+std::map<int, vector<Detection>> DetectionFileParser::parseFile(std::ifstream &file) {
     string line;
+    std::map<int, vector<Detection>> frameToDetections;
     if (file.is_open()) {
         while (getline(file, line)) {
             std::pair<int, Detection> frameDet = DetectionFileParser::parseLine(line);
@@ -17,26 +18,15 @@ DetectionFileParser::DetectionFileParser(std::ifstream &file)
         }
         file.close();
     }
-}
-
-// Methods
-
-vector<Detection> DetectionFileParser::detect() {
-    if (frame > frameToDetections.rbegin()->first) {
-        throw "Out of frames";
-    }
-    while (frameToDetections.find(++frame) == frameToDetections.end()) {
-        if (frame > frameToDetections.rbegin()->first) {
-            throw "Out of frames";
-        }
-    }
-    return frameToDetections[frame];
+    return std::map<int, vector<Detection>>();
 }
 
 std::pair<int, Detection> DetectionFileParser::parseLine(const string &line) {
     std::istringstream iss(line);
     int frame, cx, cy, width, height;
     string className;
-    iss >> frame >> className >> cx >> cy >> width >> height;
+    if (!(iss >> frame >> className >> cx >> cy >> width >> height)) {
+        throw std::invalid_argument("Each line must be on format [frame] [class] [cx] [cy] [width] [height]");
+    }
     return std::pair<int, Detection>(frame, Detection(className, BoundingBox(cx, cy, width, height)));
 }

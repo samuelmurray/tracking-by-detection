@@ -2,9 +2,11 @@
 #define CPP_DETECTOR_H
 
 
-#include <opencv2/core/mat.hpp>
-#include <vector>
 #include "Detection.h"
+
+#include <opencv2/core/mat.hpp>
+
+#include <vector>
 
 class Detector {
 public:
@@ -16,9 +18,7 @@ public:
 
     Detector &operator=(Detector &&rhs) = default;
 
-    virtual std::vector<Detection> detect(const cv::Mat &image);
-
-    virtual std::vector<Detection> detect();
+    virtual std::vector<Detection> detect(const cv::Mat &image) = 0;
 
     // Prevent copying
     Detector(const Detector &) = delete;
