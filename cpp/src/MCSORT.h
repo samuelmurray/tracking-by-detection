@@ -26,10 +26,12 @@ public:
 
 private:
     const std::shared_ptr<Detector> detector;
-    std::vector<DetectionPredictor> predictors = std::vector<DetectionPredictor>();
-    int frameCount = 1;
+    std::vector<DetectionPredictor> predictors;
+    int frameCount = 0;
 
-    Association associateDetectionsToPredictors(const std::vector<Detection> &detections);
+    static Association associateDetectionsToPredictors(const std::vector<Detection> &detections,
+                                                       const std::vector<DetectionPredictor> &predictors,
+                                                       double iouThreshold = 0.3);
 
     struct Association {
         std::vector<std::pair<int, int>> matches;

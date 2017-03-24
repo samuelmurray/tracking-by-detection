@@ -19,6 +19,7 @@ struct BoundingBox {
     inline int x2() const { return int(cx + width / 2.); }
     inline int y2() const { return int(cy + height / 2.); }
     inline int area() const { return width * height; }
+    inline double ratio() const { return width / double(height); }
 
     static double iou(const BoundingBox &a, const BoundingBox &b);
 };

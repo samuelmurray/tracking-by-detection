@@ -14,17 +14,26 @@ class DetectionPredictor {
 public:
     static constexpr int numStates = 7; // [x, y, area, ratio, vx, vy, area_change]
     static constexpr int numMeas = 4; // [x, y, area, ratio]
-    static const double dt;
-    static int count; // TODO: This should be a dict from class to count
+    static std::map<std::string, int> classCount;
 
 public:
     DetectionPredictor(const Detection &initialState);
 
-    DetectionPredictor(const DetectionPredictor &rhs) = delete;
+    virtual ~DetectionPredictor() = default;
 
     DetectionPredictor(DetectionPredictor &&rhs);
 
-    virtual ~DetectionPredictor();
+    DetectionPredictor &operator=(DetectionPredictor &&rhs);
+
+    // Prevent copying
+    DetectionPredictor(const DetectionPredictor &) = delete;
+
+    DetectionPredictor &operator=(DetectionPredictor &) = delete;
+
+    /**
+     * Advances the state vector.
+     */
+    void advance();
 
     /**
      * Updates the state vector with observed bbox.
@@ -32,14 +41,9 @@ public:
     void update(const Detection &det);
 
     /**
-     * Advances the state vector and returns the predicted bounding box estimate.
-     */
-    Detection predict();
-
-    /**
      * Returns the current bounding box estimate.
      */
-    Detection getCurrentPrediction() const;
+    Detection getPredictedNextDetection() const;
 
     Tracking getTracking() const;
 
@@ -47,19 +51,18 @@ public:
 
     int getTimeSinceUpdate() const;
 
+    const int getID() const;
+
     static BoundingBox stateToBoundingBox(const dlib::matrix<double, numStates, 1> &state);
 
     static dlib::matrix<double, numMeas, 1> boundingBoxToMeas(const BoundingBox &bb);
 
 private:
     std::shared_ptr<dlib::kalman_filter<numStates, numMeas>> filter;
-    std::vector<Detection> history;
-    const int ID;
-    const std::string className;
-    int timeSinceUpdate = 0;
-    int hits = 0;
-    int hitStreak = 0;
-    int age = 0;
+    std::string className;
+    int ID;
+    int timeSinceUpdate;
+    int hitStreak;
 };
 
 

@@ -6,8 +6,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <dlib/matrix.h>
-#include <dlib/optimization.h>
 
 #include <iostream>
 #include <string>
@@ -76,11 +74,12 @@ void tracking3() {
     } else {
         MCSORT tracker;
         vector<Tracking> trackings;
-        for (int i = 0; i < 5; ++i) {
-            trackings = tracker.track(cv::Mat()); // FIXME: We need to input detections here instead
+        for (auto const &detMap : DetectionFileParser::parseFile(detectionFile)) {
+            cout << "NEW FRAME - " << detMap.first << endl;
+            trackings = tracker.track(detMap.second);
             cout << "---TRACKINGS---" << endl;
-            for (auto a : trackings) {
-                cout << a << endl;
+            for (auto it = trackings.begin(); it != trackings.end(); ++it) {
+                cout << *it << endl;
             }
             cout << endl;
         }

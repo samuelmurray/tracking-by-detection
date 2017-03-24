@@ -18,7 +18,7 @@ std::map<int, vector<Detection>> DetectionFileParser::parseFile(std::ifstream &f
         }
         file.close();
     }
-    return std::map<int, vector<Detection>>();
+    return frameToDetections;
 }
 
 std::pair<int, Detection> DetectionFileParser::parseLine(const string &line) {

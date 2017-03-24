@@ -2,13 +2,16 @@
 
 using std::vector;
 
-const double DetectionPredictor::dt = 1;
-int DetectionPredictor::count = 1;
+std::map<std::string, int> DetectionPredictor::classCount;
 
 // Constructors
 
 DetectionPredictor::DetectionPredictor(const Detection &initialState)
-        : filter(nullptr), history(vector<Detection>()), ID(count++), className(initialState.className) {
+        : filter(nullptr),
+          className(initialState.className),
+          ID(++classCount[initialState.className]),
+          timeSinceUpdate(0),
+          hitStreak(0) {
     dlib::matrix<double, numStates, numStates> F; // System dynamics matrix
     dlib::matrix<double, numMeas, numStates> H; // Output matrix
     dlib::matrix<double, numStates, numStates> Q; // Process noise covariance
@@ -16,9 +19,9 @@ DetectionPredictor::DetectionPredictor(const Detection &initialState)
     dlib::matrix<double, numStates, numStates> P; // Estimate error covariance
 
     // define constant velocity model
-    F = 1, 0, 0, 0, dt, 0, 0,
-            0, 1, 0, 0, 0, dt, 0,
-            0, 0, 1, 0, 0, 0, dt,
+    F = 1, 0, 0, 0, 1, 0, 0,
+            0, 1, 0, 0, 0, 1, 0,
+            0, 0, 1, 0, 0, 0, 1,
             0, 0, 0, 1, 0, 0, 0,
             0, 0, 0, 0, 1, 0, 0,
             0, 0, 0, 0, 0, 1, 0,
@@ -34,8 +37,8 @@ DetectionPredictor::DetectionPredictor(const Detection &initialState)
             0, 1, 0, 0, 0, 0, 0,
             0, 0, 1, 0, 0, 0, 0,
             0, 0, 0, 1, 0, 0, 0,
-            0, 0, 0, 0, .0001, 0, 0,
-            0, 0, 0, 0, 0, .0001, 0,
+            0, 0, 0, 0, .01, 0, 0,
+            0, 0, 0, 0, 0, .01, 0,
             0, 0, 0, 0, 0, 0, .0001;
 
     R = 1, 0, 0, 0,
@@ -52,52 +55,52 @@ DetectionPredictor::DetectionPredictor(const Detection &initialState)
             0, 0, 0, 0, 0, 0, 10000;
 
     filter = std::make_shared<dlib::kalman_filter<numStates, numMeas>>(dlib::kalman_filter<numStates, numMeas>());
-    filter->set_measurement_noise(R);
-    filter->set_observation_model(H);
-    filter->set_estimation_error_covariance(P);
-    filter->set_process_noise(Q);
     filter->set_transition_model(F);
+    filter->set_observation_model(H);
+    filter->set_process_noise(Q);
+    filter->set_measurement_noise(R);
+    filter->set_estimation_error_covariance(P);
     dlib::matrix<double, numMeas, 1> x0(boundingBoxToMeas(initialState.bb));
     filter->update(x0);
 }
 
 DetectionPredictor::DetectionPredictor(DetectionPredictor &&rhs)
         : filter(std::move(rhs.filter)),
-          history(std::move(rhs.history)),
+          className(std::move(rhs.className)),
           ID(rhs.ID),
-          className(std::move(rhs.className)){}
+          timeSinceUpdate(rhs.timeSinceUpdate),
+          hitStreak(rhs.hitStreak) {}
 
-DetectionPredictor::~DetectionPredictor() {}
+DetectionPredictor &DetectionPredictor::operator=(DetectionPredictor &&rhs) {
+    filter = std::move(rhs.filter);
+    className = std::move(rhs.className);
+    ID = rhs.ID;
+    timeSinceUpdate = rhs.timeSinceUpdate;
+    hitStreak = rhs.hitStreak;
+    return *this;
+}
 
 // Methods
 
+void DetectionPredictor::advance() {
+    if (filter->get_current_state()(6) + filter->get_current_state()(2) <= 0) {
+        // filter->get_current_state()(6) = 0; // TODO
+    }
+    if (timeSinceUpdate++ > 0) {
+        hitStreak = 0;
+    }
+}
+
 void DetectionPredictor::update(const Detection &det) {
     timeSinceUpdate = 0;
-    history = vector<Detection>();
-    hits++;
     hitStreak++;
     filter->update(boundingBoxToMeas(det.bb));
 }
 
-Detection DetectionPredictor::predict() {
-    if (filter->get_current_state()(6) + filter->get_current_state()(2)) {
-        //filter->get_current_state()(6) = 0; // TODO
-    }
-    filter->get_predicted_next_state();
-    age++;
-    if (timeSinceUpdate > 0) {
-        hitStreak = 0;
-    }
-    timeSinceUpdate++;
-    Detection prediction = getCurrentPrediction();
-    history.push_back(prediction);
-    return prediction;
-}
-
 // Getters
 
-Detection DetectionPredictor::getCurrentPrediction() const {
-    return Detection(className, stateToBoundingBox(filter->get_current_state()));
+Detection DetectionPredictor::getPredictedNextDetection() const {
+    return Detection(className, stateToBoundingBox(filter->get_predicted_next_state()));
 }
 
 Tracking DetectionPredictor::getTracking() const {
@@ -112,11 +115,15 @@ int DetectionPredictor::getHitStreak() const {
     return hitStreak;
 }
 
+const int DetectionPredictor::getID() const {
+    return ID;
+}
+
 // Functions
 
 dlib::matrix<double, DetectionPredictor::numMeas, 1> DetectionPredictor::boundingBoxToMeas(const BoundingBox &bb) {
     dlib::matrix<double, DetectionPredictor::numMeas, 1> z;
-    z = bb.cx, bb.cy, bb.width * bb.height, bb.width / double(bb.height);
+    z = bb.cx, bb.cy, bb.area(), bb.ratio();
     return z;
 }
 
