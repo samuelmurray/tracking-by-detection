@@ -3,11 +3,6 @@ CC = g++
 CCFLAGS = -std=c++11 -g -Wall -pedantic
 LDFLAGS =
 
-SOURCEDIR = src
-BUILDDIR = build
-
-#VPATH = ./munkres
-
 # OpenCV - set PKG_CONFIG_PATH to folder containing opencv.pc
 CCFLAGS += `pkg-config --cflags opencv`
 LDFLAGS += `pkg-config --libs opencv`
@@ -22,16 +17,15 @@ LDFLAGS += `pkg-config --libs openblas`
 
 export PKG_CONFIG_PATH := ../config:$(PKG_CONFIG_PATH)
 
-# Eigen
-CCFLAGS += `pkg-config --cflags eigen`
+# FOR USE WITH CAFFE
 
 # Caffe
-CCFLAGS += `pkg-config --cflags caffe`
-LDFLAGS += `pkg-config --libs caffe`
+caffe: CCFLAGS += `pkg-config --cflags caffe`
+caffe: LDFLAGS += `pkg-config --libs caffe`
 
 # Cuda
-CCFLAGS += `pkg-config --cflags cuda`
-LDFLAGS += `pkg-config --libs cuda`
+caffe: CCFLAGS += `pkg-config --cflags cuda`
+caffe: LDFLAGS += `pkg-config --libs cuda`
 
 # Create dependency files
 DEPDIR := .d
@@ -39,33 +33,32 @@ $(shell mkdir -p $(DEPDIR) >/dev/null)
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
 # Input/Output files
+SOURCEDIR = src
+BUILDDIR = build
 SOURCES = $(wildcard $(SOURCEDIR)/*.cpp)
-#OBJECTS = $(SOURCES:.cpp=.o)
 OBJECTS = $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
 TARGET = main.out
 
 # For compilation without Caffe
-NCSOURCES = $(filter-out $(SOURCEDIR)/BBDetector.cpp, $(SOURCES))
-#NCOBJECTS = $(NCSOURCES:.cpp=.o)
-NCOBJECTS = $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(NCSOURCES))
-NCTARGET = ncmain.out
-NCLDFLAGS = `pkg-config --libs opencv`
-NCLDFLAGS += `pkg-config --libs dlib-1`
-NCLDFLAGS += `pkg-config --libs openblas`
+CAFFE_DEPOBJ = BBDetector.o
+NOCAFFE_OBJECTS = $(filter-out $(addprefix $(BUILDDIR)/,$(CAFFE_DEPOBJ)), $(OBJECTS))
+NOCAFFE_TARGET = nocaffe.out
 
-
+# Compilation options
 COMPILE = $(CC) $(DEPFLAGS) $(CCFLAGS) -c
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
-all: $(TARGET)
+# With Caffe
+caffe: $(TARGET)
 
 $(TARGET): $(OBJECTS)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-nocaffe: $(NCTARGET)
+# Without Caffe
+nocaffe: $(NOCAFFE_TARGET)
 
-$(NCTARGET): $(NCOBJECTS)
-	$(CC) -o $@ $^ $(NCLDFLAGS)
+$(NOCAFFE_TARGET): $(NOCAFFE_OBJECTS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 
 $(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(SOURCEDIR)/%.h
@@ -84,5 +77,4 @@ $(DEPDIR)/%.d: ;
 include $(wildcard $(patsubst %,$(DEPDIR)/%.d,$(basename $(SOURCES))))
 
 clean:
-	rm -f $(OBJECTS) $(NCOBJECTS) $(TARGET)
-	rm -rf $(TARGET).dSYM/
+	rm -f $(BUILDDIR)/* $(TARGET) $(NOCAFFE_TARGET)
