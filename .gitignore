@@ -1,6 +1,10 @@
 #### Project specific ####
 data/*
 models/*
+config/*.pc
+
+# Python
+python/data/
 
 #### IDE #####
 # Clion
