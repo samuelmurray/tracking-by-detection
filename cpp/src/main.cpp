@@ -13,14 +13,6 @@
 
 using namespace std;
 
-/*
-using std::vector
-using std::cout;
-using std::cin;
-using std::endl;
-using std::string;
- */
-
 void tracking() {
     using namespace cv;
     Mat image;
@@ -86,8 +78,39 @@ void tracking3() {
     }
 }
 
+void tracking4() {
+    string filePath = "../data/2DMOT2015Labels/train/ADL-Rundle-6/gt/gt.txt";
+    //string filePath = "../data/mot.txt";
+    ifstream detectionFile(filePath);
+    if (!detectionFile.is_open()) {
+        cout << "Could not load file " << filePath << endl;
+    } else {
+        ofstream output;
+        output.open ("output.txt");
+        MCSORT tracker;
+        vector<Tracking> trackings;
+        for (auto const &detMap : DetectionFileParser::parseMOTFile(detectionFile)) {
+            cout << "NEW FRAME - " << detMap.first << endl;
+            trackings = tracker.track(detMap.second);
+            cout << "---TRACKINGS---" << endl;
+            for (auto it = trackings.begin(); it != trackings.end(); ++it) {
+                cout << *it << endl;
+                output << detMap.first << ","
+                        << it->ID << ","
+                        << it->bb.x1() << ","
+                        << it->bb.y1() << ","
+                        << it->bb.width << ","
+                        << it->bb.height << ","
+                        << "1,-1,-1,-1\n";
+            }
+            cout << endl;
+        }
+        output.close();
+    }
+}
+
 
 int main(int argc, char **argv) {
-    tracking3();
+    tracking4();
     return 0;
 }
