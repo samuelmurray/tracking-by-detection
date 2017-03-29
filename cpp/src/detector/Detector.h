@@ -2,7 +2,7 @@
 #define CPP_DETECTOR_H
 
 
-#include "Detection.h"
+#include "../util/Detection.h"
 
 #include <opencv2/core/mat.hpp>
 

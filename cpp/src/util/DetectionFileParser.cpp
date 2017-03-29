@@ -1,26 +1,22 @@
 #include "DetectionFileParser.h"
 
 #include <sstream>
-#include <iostream>
-
-using std::vector;
-using std::string;
 
 // Functions
 
-std::map<int, vector<Detection>> DetectionFileParser::parseFile(std::ifstream &file) {
+std::map<int, std::vector<Detection>> DetectionFileParser::parseFile(std::ifstream &file) {
     return parseFile(file, DetectionFileParser::parseLine);
 }
 
-std::map<int, vector<Detection>> DetectionFileParser::parseMOTFile(std::ifstream &file) {
+std::map<int, std::vector<Detection>> DetectionFileParser::parseMOTFile(std::ifstream &file) {
     return parseFile(file, DetectionFileParser::parseMOTLine);
 }
 
 std::map<int, std::vector<Detection>> DetectionFileParser::parseFile(
         std::ifstream &file,
         std::pair<int, Detection> (*parseLineFunc)(const std::string &)) {
-    string line;
-    std::map<int, vector<Detection>> frameToDetections;
+    std::string line;
+    std::map<int, std::vector<Detection>> frameToDetections;
     if (file.is_open()) {
         while (getline(file, line)) {
             std::pair<int, Detection> frameDet = parseLineFunc(line);
@@ -31,10 +27,10 @@ std::map<int, std::vector<Detection>> DetectionFileParser::parseFile(
     return frameToDetections;
 }
 
-std::pair<int, Detection> DetectionFileParser::parseLine(const string &line) {
+std::pair<int, Detection> DetectionFileParser::parseLine(const std::string &line) {
     std::istringstream iss(line);
     int frame, cx, cy, width, height;
-    string className;
+    std::string className;
     if (!(iss >> frame >> className >> cx >> cy >> width >> height)) {
         throw std::invalid_argument(
                 "Each line must be on following format: "
@@ -47,7 +43,7 @@ std::pair<int, Detection> DetectionFileParser::parseMOTLine(const std::string &l
     std::istringstream is(line);
     int frame, x1, y1, width, height;
     int id, conf, x, y, z; // Unused
-    string className = "person";
+    std::string className = "person";
     if (!(is >> frame && is.ignore() &&
             is >> id && is.ignore() &&
             is >> x1 && is.ignore() &&

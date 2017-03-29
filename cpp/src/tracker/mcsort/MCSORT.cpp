@@ -1,10 +1,9 @@
 #include "MCSORT.h"
 
-#include "NoAssociatedDetector.h"
+#include "../NoAssociatedDetector.h"
 
 #include <dlib/optimization.h>
 
-using std::vector;
 using std::cout;
 using std::endl;
 
@@ -24,11 +23,11 @@ std::vector<Tracking> MCSORT::track(const cv::Mat &image) {
     if (!detector) {
         throw NoAssociatedDetector();
     }
-    vector<Detection> detections = detector->detect(image);
+    std::vector<Detection> detections = detector->detect(image);
     return track(detections);
 }
 
-vector<Tracking> MCSORT::track(const vector<Detection> &detections) {
+std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
     frameCount++;
 
     cout << "---DETECTIONS---" << endl;
@@ -58,19 +57,19 @@ vector<Tracking> MCSORT::track(const vector<Detection> &detections) {
 
     // Create and initialise new predictors for unmatched detections
     for (auto id : association.unmatchedDetections) {
-        DetectionPredictor predictor(detections.at(id));
+        KalmanPredictor predictor(detections.at(id));
         predictors.push_back(std::move(predictor));
     }
 
     // Remove predictors that have been inactive for too long
     predictors.erase(std::remove_if(
             predictors.begin(), predictors.end(),
-            [](const DetectionPredictor &predictor) {
+            [](const KalmanPredictor &predictor) {
                 return predictor.getTimeSinceUpdate() > maxAge;
             }), predictors.end());
 
     // Return trackings from active predictors
-    vector<Tracking> trackings;
+    std::vector<Tracking> trackings;
     for (auto it = predictors.begin(); it != predictors.end(); ++it) {
         if (it->getTimeSinceUpdate() < 1 &&
             (it->getHitStreak() >= minHits || frameCount <= minHits)) {
@@ -81,12 +80,12 @@ vector<Tracking> MCSORT::track(const vector<Detection> &detections) {
 }
 
 MCSORT::Association MCSORT::associateDetectionsToPredictors(const std::vector<Detection> &detections,
-                                                            const std::vector<DetectionPredictor> &predictors,
+                                                            const std::vector<KalmanPredictor> &predictors,
                                                             double iouThreshold) {
     const int DOUBLE_PRECISION = 100;
     std::vector<std::pair<int, int>> matches;
-    vector<int> unmatchedDetections;
-    vector<int> unmatchedPredictors;
+    std::vector<int> unmatchedDetections;
+    std::vector<int> unmatchedPredictors;
 
     if (predictors.empty()) {
         cout << "(No predictors)" << endl;
@@ -111,7 +110,7 @@ MCSORT::Association MCSORT::associateDetectionsToPredictors(const std::vector<De
     }
     cout << "---COST MATRIX---" << endl << cost;
 
-    vector<long> assignment = dlib::max_cost_assignment(cost);
+    std::vector<long> assignment = dlib::max_cost_assignment(cost);
 
     // Filter out matches with low IoU, including those for indices from padding
     for (int d = 0; d < assignment.size(); ++d) {

@@ -2,7 +2,7 @@
 #define CPP_DETECTIONFILEPARSER_H
 
 
-#include "Detector.h"
+#include "../detector/Detector.h"
 
 #include <fstream>
 #include <map>

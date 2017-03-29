@@ -1,7 +1,7 @@
-#include "Tracker.h"
-#include "RandomTracker.h"
-#include "MCSORT.h"
-#include "DetectionFileParser.h"
+#include "tracker/Tracker.h"
+#include "tracker/RandomTracker.h"
+#include "tracker/mcsort/MCSORT.h"
+#include "util/DetectionFileParser.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -29,9 +29,9 @@ void tracking() {
         if (!image.data) {
             cout << "Could not load image " << imagePath << endl;
         } else {
-            vector<Tracking> ret = tracker->track(image);
-            for (auto a : ret) {
-                cout << a << endl;
+            vector<Tracking> trackings = tracker->track(image);
+            for (auto it = trackings.begin(); it != trackings.end(); ++it) {
+                cout << *it << endl;
             }
         }
         cout << "\nGive more images, or type '0' to exit\n";
@@ -50,8 +50,8 @@ void tracking2() {
         for (int i = 0; i < 5; ++i) {
             trackings = tracker.track(image);
             cout << "---TRACKINGS---" << endl;
-            for (auto a : trackings) {
-                cout << a << endl;
+            for (auto it = trackings.begin(); it != trackings.end(); ++it) {
+                cout << *it << endl;
             }
             cout << endl;
         }

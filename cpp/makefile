@@ -3,6 +3,9 @@ CC = g++
 CCFLAGS = -std=c++11 -g -Wall -pedantic
 LDFLAGS =
 
+# Print variable
+print-%  : ; @echo $* = $($*)
+
 # OpenCV - set PKG_CONFIG_PATH to folder containing opencv.pc
 CCFLAGS += `pkg-config --cflags opencv`
 LDFLAGS += `pkg-config --libs opencv`
@@ -35,12 +38,13 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 # Input/Output files
 SOURCEDIR = src
 BUILDDIR = build
-SOURCES = $(wildcard $(SOURCEDIR)/*.cpp)
+#SOURCES = $(wildcard $(SOURCEDIR)/*.cpp $(SOURCEDIR)/**/*.cpp)
+SOURCES := $(shell find $(SOURCEDIR) -name "*.cpp")
 OBJECTS = $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
 TARGET = main.out
 
 # For compilation without Caffe
-CAFFE_DEPOBJ = BBDetector.o
+CAFFE_DEPOBJ = detector/BBDetector.o
 NOCAFFE_OBJECTS = $(filter-out $(addprefix $(BUILDDIR)/,$(CAFFE_DEPOBJ)), $(OBJECTS))
 NOCAFFE_TARGET = nocaffe.out
 
@@ -63,18 +67,23 @@ $(NOCAFFE_TARGET): $(NOCAFFE_OBJECTS)
 
 $(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(SOURCEDIR)/%.h
 $(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(SOURCEDIR)/%.h $(DEPDIR)/%.d
+	@mkdir -p "$(@D)"
 	$(COMPILE) $< -o $@
 	$(POSTCOMPILE)
 
 $(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp
 $(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(DEPDIR)/%.d
+	@mkdir -p "$(@D)"
 	$(COMPILE) $< -o $@
 	$(POSTCOMPILE)
 
 $(DEPDIR)/%.d: ;
+	@mkdir -p "$(@D)"
 .PRECIOUS: $(DEPDIR)/%.d
 
 include $(wildcard $(patsubst %,$(DEPDIR)/%.d,$(basename $(SOURCES))))
 
 clean:
-	rm -f $(BUILDDIR)/* $(TARGET) $(NOCAFFE_TARGET)
+	rm -rf $(BUILDDIR)/* 
+	rm -rf $(DEPDIR)/*
+	rm -f $(TARGET) $(NOCAFFE_TARGET)

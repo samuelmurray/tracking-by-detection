@@ -3,7 +3,7 @@
 
 
 #include "Tracker.h"
-#include "Detector.h"
+#include "../detector/Detector.h"
 
 class RandomTracker : public Tracker {
 public:

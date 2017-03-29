@@ -5,7 +5,7 @@
 #include "Detector.h"
 
 #include <caffe/caffe.hpp>
-#include <opencv2/core/Mat.hpp>
+#include <opencv2/core/mat.hpp>
 
 #include <string>
 #include <memory>

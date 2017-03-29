@@ -2,33 +2,33 @@
 #define CPP_DETECTIONPREDICTOR_H
 
 
-#include "Detection.h"
-#include "Tracking.h"
+#include "../../util/Detection.h"
+#include "../../util/Tracking.h"
 
 #include <dlib/matrix.h>
 #include <dlib/filtering.h>
 
 #include <vector>
 
-class DetectionPredictor {
+class KalmanPredictor {
 public:
     static constexpr int numStates = 7; // [x, y, area, ratio, vx, vy, area_change]
     static constexpr int numMeas = 4; // [x, y, area, ratio]
     static std::map<std::string, int> classCount;
 
 public:
-    DetectionPredictor(const Detection &initialState);
+    KalmanPredictor(const Detection &initialState);
 
-    virtual ~DetectionPredictor() = default;
+    virtual ~KalmanPredictor() = default;
 
-    DetectionPredictor(DetectionPredictor &&rhs);
+    KalmanPredictor(KalmanPredictor &&rhs);
 
-    DetectionPredictor &operator=(DetectionPredictor &&rhs);
+    KalmanPredictor &operator=(KalmanPredictor &&rhs);
 
     // Prevent copying
-    DetectionPredictor(const DetectionPredictor &) = delete;
+    KalmanPredictor(const KalmanPredictor &) = delete;
 
-    DetectionPredictor &operator=(DetectionPredictor &) = delete;
+    KalmanPredictor &operator=(KalmanPredictor &) = delete;
 
     /**
      * Advances the state vector.

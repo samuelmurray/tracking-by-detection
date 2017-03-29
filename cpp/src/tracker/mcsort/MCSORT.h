@@ -2,9 +2,9 @@
 #define CPP_MCSORT_H
 
 
-#include "Tracker.h"
-#include "Detector.h"
-#include "DetectionPredictor.h"
+#include "../Tracker.h"
+#include "../../detector/Detector.h"
+#include "KalmanPredictor.h"
 
 class MCSORT;
 
@@ -26,11 +26,11 @@ public:
 
 private:
     const std::shared_ptr<Detector> detector;
-    std::vector<DetectionPredictor> predictors;
+    std::vector<KalmanPredictor> predictors;
     int frameCount = 0;
 
     static Association associateDetectionsToPredictors(const std::vector<Detection> &detections,
-                                                       const std::vector<DetectionPredictor> &predictors,
+                                                       const std::vector<KalmanPredictor> &predictors,
                                                        double iouThreshold = 0.3);
 
     struct Association {

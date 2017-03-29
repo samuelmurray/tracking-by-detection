@@ -2,8 +2,8 @@
 #define CPP_TRACKER_H
 
 
-#include "Detection.h"
-#include "Tracking.h"
+#include "../util/Detection.h"
+#include "../util/Tracking.h"
 
 #include <opencv2/core/mat.hpp>
 

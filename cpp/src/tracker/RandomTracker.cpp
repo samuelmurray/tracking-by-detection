@@ -1,13 +1,9 @@
 #include "RandomTracker.h"
 
-#include "RandomDetector.h"
+#include "../detector/RandomDetector.h"
 #include "NoAssociatedDetector.h"
 
 #include <map>
-
-using std::vector;
-using std::map;
-using std::string;
 
 // Constructors
 
@@ -16,17 +12,17 @@ RandomTracker::RandomTracker()
 
 // Methods
 
-vector<Tracking> RandomTracker::track(const cv::Mat &image) {
+std::vector<Tracking> RandomTracker::track(const cv::Mat &image) {
     if (!detector) {
         throw NoAssociatedDetector();
     }
-    vector<Detection> detections = detector->detect(image);
+    std::vector<Detection> detections = detector->detect(image);
     return track(detections);
 }
 
-vector<Tracking> RandomTracker::track(const vector<Detection> &detections) {
-    vector<Tracking> associatedDetections;
-    map<string, int> classCount;
+std::vector<Tracking> RandomTracker::track(const std::vector<Detection> &detections) {
+    std::vector<Tracking> associatedDetections;
+    std::map<std::string, int> classCount;
     for (auto det : detections) {
         Tracking d(det.className, classCount[det.className]++, det.bb);
         associatedDetections.push_back(d);

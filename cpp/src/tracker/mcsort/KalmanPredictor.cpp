@@ -1,12 +1,10 @@
-#include "DetectionPredictor.h"
+#include "KalmanPredictor.h"
 
-using std::vector;
-
-std::map<std::string, int> DetectionPredictor::classCount;
+std::map<std::string, int> KalmanPredictor::classCount;
 
 // Constructors
 
-DetectionPredictor::DetectionPredictor(const Detection &initialState)
+KalmanPredictor::KalmanPredictor(const Detection &initialState)
         : filter(nullptr),
           className(initialState.className),
           ID(++classCount[initialState.className]),
@@ -64,14 +62,14 @@ DetectionPredictor::DetectionPredictor(const Detection &initialState)
     filter->update(x0);
 }
 
-DetectionPredictor::DetectionPredictor(DetectionPredictor &&rhs)
+KalmanPredictor::KalmanPredictor(KalmanPredictor &&rhs)
         : filter(std::move(rhs.filter)),
           className(std::move(rhs.className)),
           ID(rhs.ID),
           timeSinceUpdate(rhs.timeSinceUpdate),
           hitStreak(rhs.hitStreak) {}
 
-DetectionPredictor &DetectionPredictor::operator=(DetectionPredictor &&rhs) {
+KalmanPredictor &KalmanPredictor::operator=(KalmanPredictor &&rhs) {
     filter = std::move(rhs.filter);
     className = std::move(rhs.className);
     ID = rhs.ID;
@@ -82,13 +80,13 @@ DetectionPredictor &DetectionPredictor::operator=(DetectionPredictor &&rhs) {
 
 // Methods
 
-void DetectionPredictor::update() {
+void KalmanPredictor::update() {
     timeSinceUpdate++;
     hitStreak = 0;
     filter->update();
 }
 
-void DetectionPredictor::update(const Detection &det) {
+void KalmanPredictor::update(const Detection &det) {
     timeSinceUpdate = 0;
     hitStreak++;
     filter->update(boundingBoxToMeas(det.bb));
@@ -96,35 +94,35 @@ void DetectionPredictor::update(const Detection &det) {
 
 // Getters
 
-Detection DetectionPredictor::getPredictedNextDetection() const {
+Detection KalmanPredictor::getPredictedNextDetection() const {
     return Detection(className, stateToBoundingBox(filter->get_predicted_next_state()));
 }
 
-Tracking DetectionPredictor::getTracking() const {
+Tracking KalmanPredictor::getTracking() const {
     return Tracking(className, ID, stateToBoundingBox(filter->get_current_state()));
 }
 
-int DetectionPredictor::getTimeSinceUpdate() const {
+int KalmanPredictor::getTimeSinceUpdate() const {
     return timeSinceUpdate;
 }
 
-int DetectionPredictor::getHitStreak() const {
+int KalmanPredictor::getHitStreak() const {
     return hitStreak;
 }
 
-const int DetectionPredictor::getID() const {
+const int KalmanPredictor::getID() const {
     return ID;
 }
 
 // Functions
 
-dlib::matrix<double, DetectionPredictor::numMeas, 1> DetectionPredictor::boundingBoxToMeas(const BoundingBox &bb) {
-    dlib::matrix<double, DetectionPredictor::numMeas, 1> z;
+dlib::matrix<double, KalmanPredictor::numMeas, 1> KalmanPredictor::boundingBoxToMeas(const BoundingBox &bb) {
+    dlib::matrix<double, KalmanPredictor::numMeas, 1> z;
     z = bb.cx, bb.cy, bb.area(), bb.ratio();
     return z;
 }
 
-BoundingBox DetectionPredictor::stateToBoundingBox(const dlib::matrix<double, numStates, 1> &state) {
+BoundingBox KalmanPredictor::stateToBoundingBox(const dlib::matrix<double, numStates, 1> &state) {
     double rectifiedArea = std::max(state(2), 0.);
     double width = std::sqrt(rectifiedArea * state(3));
     double height = rectifiedArea / width;
