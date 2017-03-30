@@ -126,5 +126,10 @@ BoundingBox KalmanPredictor::stateToBoundingBox(const dlib::matrix<double, numSt
     double rectifiedArea = std::max(state(2), 0.);
     double width = std::sqrt(rectifiedArea * state(3));
     double height = rectifiedArea / width;
-    return BoundingBox(int(state(0)), int(state(1)), int(width), int(height));
+    return BoundingBox(state(0), state(1), width, height);
+}
+
+std::ostream &operator<<(std::ostream &os, const KalmanPredictor &kp) {
+    os << kp.getPredictedNextDetection();
+    return os;
 }

@@ -1,6 +1,7 @@
 #include "MCSORT.h"
 
 #include "../NoAssociatedDetector.h"
+#include "../../util/Affinity.h"
 
 #include <dlib/optimization.h>
 
@@ -37,7 +38,7 @@ std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
 
     cout << "---PREDICTIONS---" << endl;
     for (auto it = predictors.begin(); it != predictors.end(); ++it) {
-        cout << "Tracker " << it->getID() << " " << it->getPredictedNextDetection() << endl;
+        cout << *it << endl;
     }
 
     Association association = associateDetectionsToPredictors(detections, predictors);
@@ -98,7 +99,8 @@ MCSORT::Association MCSORT::associateDetectionsToPredictors(const std::vector<De
     for (size_t row = 0; row < detections.size(); ++row) {
         for (size_t col = 0; col < predictors.size(); ++col) {
             cost(row, col) = int(DOUBLE_PRECISION *
-                                 Detection::iou(detections.at(row), predictors.at(col).getPredictedNextDetection()));
+                                 Affinity::iou(detections.at(row).bb,
+                                               predictors.at(col).getPredictedNextDetection().bb));
         }
     }
 

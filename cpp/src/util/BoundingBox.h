@@ -5,23 +5,21 @@
 #include <ostream>
 
 struct BoundingBox {
-    BoundingBox(const int cx, const int cy, const int width, const int height);
+    BoundingBox(double cx, double cy, double width, double height);
 
-    const int cx;
-    const int cy;
-    const int width;
-    const int height;
+    const double cx;
+    const double cy;
+    const double width;
+    const double height;
 
     // (x1,y1) - top left
     // (x2,y2) - bottom right
-    inline int x1() const { return int(cx - width / 2.); }
-    inline int y1() const { return int(cy - height / 2.); }
-    inline int x2() const { return int(cx + width / 2.); }
-    inline int y2() const { return int(cy + height / 2.); }
-    inline int area() const { return width * height; }
-    inline double ratio() const { return width / double(height); }
-
-    static double iou(const BoundingBox &a, const BoundingBox &b);
+    inline double x1() const { return cx - width / 2; }
+    inline double y1() const { return cy - height / 2; }
+    inline double x2() const { return cx + width / 2; }
+    inline double y2() const { return cy + height / 2; }
+    inline double area() const { return width * height; }
+    inline double ratio() const { return width / height; }
 };
 
 std::ostream &operator<<(std::ostream &os, const BoundingBox &bb);

@@ -79,7 +79,8 @@ void tracking3() {
 }
 
 void tracking4() {
-    string filePath = "../data/2DMOT2015Labels/train/ADL-Rundle-6/gt/gt.txt";
+    //string filePath = "../data/2DMOT2015/data/train/ADL-Rundle-6/gt/gt.txt";
+    string filePath = "../data/motdet.txt";
     //string filePath = "../data/mot.txt";
     ifstream detectionFile(filePath);
     if (!detectionFile.is_open()) {

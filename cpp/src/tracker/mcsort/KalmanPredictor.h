@@ -65,5 +65,7 @@ private:
     int hitStreak;
 };
 
+std::ostream &operator<<(std::ostream &os, const KalmanPredictor &kp);
+
 
 #endif //CPP_DETECTIONPREDICTOR_H

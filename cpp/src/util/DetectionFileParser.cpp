@@ -59,5 +59,5 @@ std::pair<int, Detection> DetectionFileParser::parseMOTLine(const std::string &l
                         "<frame>,<id>,<x_topleft>,<y_topleft>,<width>,<height>,<conf>,<x>,<y>,<z>");
     }
     return std::pair<int, Detection>(frame, Detection(
-            className, BoundingBox(int(x1 + width / 2.0), int(y1 + height / 2.0), width, height)));
+            className, BoundingBox(x1 + width / 2.0, y1 + height / 2.0, width, height)));
 }

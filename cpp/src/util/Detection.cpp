@@ -13,10 +13,6 @@ Detection::Detection(Detection &&rhs)
 
 // Functions
 
-double Detection::iou(const Detection &a, const Detection &b) {
-    return (a.className == b.className) ? BoundingBox::iou(a.bb, b.bb) : 0;
-}
-
 std::ostream &operator<<(std::ostream &os, const Detection &d) {
     os << d.className << " " << d.bb;
     return os;

@@ -9,6 +9,14 @@
 struct Tracking {
     Tracking(const std::string &className, int ID, const BoundingBox &bb);
 
+    Tracking(const Tracking &rhs);
+
+    Tracking(Tracking &&rhs);
+
+    Tracking &operator=(const Tracking &rhs) = delete;
+
+    Tracking &operator=(Tracking &&rhs) = delete;
+
     const std::string className;
     const int ID;
     const BoundingBox bb;

@@ -17,8 +17,6 @@ struct Detection {
 
     Detection &operator=(Detection &&rhs) = delete;
 
-    static double iou(const Detection &a, const Detection &b);
-
     const std::string className;
     const BoundingBox bb;
 };
