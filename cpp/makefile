@@ -1,33 +1,32 @@
 # Compiler options
-CC = g++
-CCFLAGS = -std=c++11 -g -Wall -pedantic
+CXX = g++
+CXXFLAGS = -std=c++11 -g -Wall -pedantic
 LDFLAGS =
 
 # Print variable
 print-%  : ; @echo $* = $($*)
 
 # OpenCV - set PKG_CONFIG_PATH to folder containing opencv.pc
-CCFLAGS += `pkg-config --cflags opencv`
+CXXFLAGS += `pkg-config --cflags opencv`
 LDFLAGS += `pkg-config --libs opencv`
 
 # dlib
-CCFLAGS += `pkg-config --cflags dlib-1`
+CXXFLAGS += `pkg-config --cflags dlib-1`
 LDFLAGS += `pkg-config --libs dlib-1`
 
 # openblas
-CCFLAGS += `pkg-config --cflags openblas`
+CXXFLAGS += `pkg-config --cflags openblas`
 LDFLAGS += `pkg-config --libs openblas`
 
 export PKG_CONFIG_PATH := ../config:$(PKG_CONFIG_PATH)
 
-# FOR USE WITH CAFFE
-
+# For compilation with Caffe
 # Caffe
-caffe: CCFLAGS += `pkg-config --cflags caffe`
+caffe: CXXFLAGS += `pkg-config --cflags caffe`
 caffe: LDFLAGS += `pkg-config --libs caffe`
 
 # Cuda
-caffe: CCFLAGS += `pkg-config --cflags cuda`
+caffe: CXXFLAGS += `pkg-config --cflags cuda`
 caffe: LDFLAGS += `pkg-config --libs cuda`
 
 # Create dependency files
@@ -44,46 +43,41 @@ OBJECTS = $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
 TARGET = main.out
 
 # For compilation without Caffe
-CAFFE_DEPOBJ = detector/BBDetector.o
-NOCAFFE_OBJECTS = $(filter-out $(addprefix $(BUILDDIR)/,$(CAFFE_DEPOBJ)), $(OBJECTS))
-NOCAFFE_TARGET = nocaffe.out
+nocaffe: CAFFE_DEPOBJ = detector/BBDetector.o
+nocaffe: OBJECTS := $(filter-out $(addprefix $(BUILDDIR)/,$(CAFFE_DEPOBJ)), $(OBJECTS))
 
 # Compilation options
-COMPILE = $(CC) $(DEPFLAGS) $(CCFLAGS) -c
+MKDIRIFNOTEXIST = @test -d $(@D) || mkdir -p $(@D)
+COMPILE = $(CXX) $(DEPFLAGS) $(CXXFLAGS) -c
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
-# With Caffe
-caffe: $(TARGET)
+caffe nocaffe: $(TARGET)
 
-$(TARGET): $(OBJECTS)
-	$(CC) -o $@ $^ $(LDFLAGS)
+.SECONDEXPANSION:
+.SECONDARY: $(OBJECTS)
+%.out: $$(OBJECTS) 
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
-# Without Caffe
-nocaffe: $(NOCAFFE_TARGET)
-
-$(NOCAFFE_TARGET): $(NOCAFFE_OBJECTS)
-	$(CC) -o $@ $^ $(LDFLAGS)
-
-
-$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(SOURCEDIR)/%.h
-$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(SOURCEDIR)/%.h $(DEPDIR)/%.d
-	@mkdir -p "$(@D)"
+# Instead of "| ... " we could call MKDIRIFNOTEXIST always, but I found this neat
+$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(SOURCEDIR)/%.h $(DEPDIR)/%.d | $(BUILDDIR)/$$(filter-out ./,$$(dir %)).dir
 	$(COMPILE) $< -o $@
 	$(POSTCOMPILE)
 
-$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp
-$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(DEPDIR)/%.d
-	@mkdir -p "$(@D)"
+$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(DEPDIR)/%.d | $(BUILDDIR)/$$(filter-out ./,$$(dir %)).dir
 	$(COMPILE) $< -o $@
 	$(POSTCOMPILE)
 
-$(DEPDIR)/%.d: ;
-	@mkdir -p "$(@D)"
+%.dir:
+	$(MKDIRIFNOTEXIST)
+
+$(DEPDIR)/%.d:
+	$(MKDIRIFNOTEXIST)
 .PRECIOUS: $(DEPDIR)/%.d
 
 include $(wildcard $(patsubst %,$(DEPDIR)/%.d,$(basename $(SOURCES))))
 
+.PHONY: clean
 clean:
 	rm -rf $(BUILDDIR)/* 
 	rm -rf $(DEPDIR)/*
-	rm -f $(TARGET) $(NOCAFFE_TARGET)
+	rm -f $(TARGET)
