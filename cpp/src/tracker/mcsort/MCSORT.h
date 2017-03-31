@@ -3,7 +3,6 @@
 
 
 #include "../Tracker.h"
-#include "../../detector/Detector.h"
 #include "KalmanPredictor.h"
 
 class MCSORT;
@@ -16,16 +15,11 @@ public:
     static const int minHits;
 
 public:
-    MCSORT();
-
-    MCSORT(const std::shared_ptr<Detector> &detector);
-
-    std::vector<Tracking> track(const cv::Mat &image) override;
+    MCSORT() = default;
 
     std::vector<Tracking> track(const std::vector<Detection> &detections) override;
 
 private:
-    const std::shared_ptr<Detector> detector;
     std::vector<KalmanPredictor> predictors;
     int frameCount = 0;
 

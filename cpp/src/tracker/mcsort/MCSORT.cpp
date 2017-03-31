@@ -1,6 +1,5 @@
 #include "MCSORT.h"
 
-#include "../NoAssociatedDetector.h"
 #include "../../util/Affinity.h"
 
 #include <dlib/optimization.h>
@@ -11,22 +10,7 @@ using std::endl;
 const int MCSORT::maxAge = 1;
 const int MCSORT::minHits = 3;
 
-// Constructors
-
-MCSORT::MCSORT() {}
-
-MCSORT::MCSORT(const std::shared_ptr<Detector> &detector)
-        : detector(detector) {}
-
 // Methods
-
-std::vector<Tracking> MCSORT::track(const cv::Mat &image) {
-    if (!detector) {
-        throw NoAssociatedDetector();
-    }
-    std::vector<Detection> detections = detector->detect(image);
-    return track(detections);
-}
 
 std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
     frameCount++;

@@ -7,14 +7,9 @@
 
 class RandomTracker : public Tracker {
 public:
-    RandomTracker();
-
-    std::vector<Tracking> track(const cv::Mat &image) override;
+    RandomTracker() = default;
 
     std::vector<Tracking> track(const std::vector<Detection> &detections) override;
-
-private:
-    const std::shared_ptr<Detector> detector;
 };
 
 

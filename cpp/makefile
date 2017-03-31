@@ -22,12 +22,12 @@ LDFLAGS += `pkg-config --libs openblas`
 
 # For compilation with Caffe
 # Caffe
-caffe: CXXFLAGS += `pkg-config --cflags caffe`
-caffe: LDFLAGS += `pkg-config --libs caffe`
+trackimages: CXXFLAGS += `pkg-config --cflags caffe`
+trackimages: LDFLAGS += `pkg-config --libs caffe`
 
 # Cuda
-caffe: CXXFLAGS += `pkg-config --cflags cuda`
-caffe: LDFLAGS += `pkg-config --libs cuda`
+trackimages: CXXFLAGS += `pkg-config --cflags cuda`
+trackimages: LDFLAGS += `pkg-config --libs cuda`
 
 # Create dependency files
 DEPDIR := .d
@@ -38,45 +38,46 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 SOURCEDIR = src
 BUILDDIR = build
 MAINDIR = examples
-#SOURCES = $(wildcard $(SOURCEDIR)/*.cpp $(SOURCEDIR)/**/*.cpp)
-SOURCES := $(shell find $(SOURCEDIR) -name "*.cpp" -not -path *examples/*)
-OBJECTS = $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
 TARGET = main.out
 
-# For compilation without Caffe
-nocaffe: CAFFE_DEPOBJ = detector/BBDetector.o
-nocaffe: OBJECTS := $(filter-out $(addprefix $(BUILDDIR)/,$(CAFFE_DEPOBJ)), $(OBJECTS))
-nocaffe: OBJECTS += $(BUILDDIR)/$(MAINDIR)/TrackDetections.o
+# For compilation of TrackImages.cpp
+trackimages: SOURCES := $(shell find $(SOURCEDIR) -name "*.cpp" -not -path *examples/*)
+trackimages: OBJECTS := $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
+trackimages: OBJECTS += $(BUILDDIR)/$(MAINDIR)/TrackImages.o
+
+# For compilation of TrackDetections.cpp
+trackdetections: SOURCES := $(shell find $(SOURCEDIR) -name "*.cpp" -not -path *examples/* -not -path *detector/*)
+trackdetections: OBJECTS := $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
+trackdetections: OBJECTS += $(BUILDDIR)/$(MAINDIR)/TrackDetections.o
 
 # Compilation options
 MKDIRIFNOTEXIST = @test -d $(@D) || mkdir -p $(@D)
 COMPILE = $(CXX) $(DEPFLAGS) $(CXXFLAGS) -c
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
-caffe: $(TARGET)
-nocaffe: $(TARGET)
+default: trackdetections
+trackimages: $(TARGET)
+trackdetections: $(TARGET)
 
 .SECONDEXPANSION:
-
 %.out: $$(OBJECTS) 
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-# Instead of "| ... " we could call MKDIRIFNOTEXIST always, but I found this neat
-$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(SOURCEDIR)/%.h $(DEPDIR)/%.d | $(BUILDDIR)/$$(filter-out ./,$$(dir %)).dir
-	$(COMPILE) $< -o $@
-	$(POSTCOMPILE)
-
-$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(DEPDIR)/%.d | $(BUILDDIR)/$$(filter-out ./,$$(dir %)).dir
-	$(COMPILE) $< -o $@
-	$(POSTCOMPILE)
-.PRECIOUS: $(BUILDDIR)/%.o
-
-%.dir:
+# I found this neat: | $(BUILDDIR)/$$(filter-out ./,$$(dir %)).dir --- %.dir: ; $(MKDIRIFNOTEXIST)
+$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(SOURCEDIR)/%.h $(DEPDIR)/%.d
 	$(MKDIRIFNOTEXIST)
+	$(COMPILE) $< -o $@
+	$(POSTCOMPILE)
+
+$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(DEPDIR)/%.d
+	$(MKDIRIFNOTEXIST)
+	$(COMPILE) $< -o $@
+	$(POSTCOMPILE)
 
 $(DEPDIR)/%.d:
 	$(MKDIRIFNOTEXIST)
-.PRECIOUS: $(DEPDIR)/%.d
+
+.PRECIOUS: $(BUILDDIR)/%.o $(DEPDIR)/%.d
 
 include $(wildcard $(patsubst %,$(DEPDIR)/%.d,$(basename $(SOURCES))))
 

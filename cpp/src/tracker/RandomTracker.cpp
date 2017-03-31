@@ -1,24 +1,8 @@
 #include "RandomTracker.h"
 
-#include "../detector/RandomDetector.h"
-#include "NoAssociatedDetector.h"
-
 #include <map>
 
-// Constructors
-
-RandomTracker::RandomTracker()
-        : detector(std::make_shared<RandomDetector>(RandomDetector())) {}
-
 // Methods
-
-std::vector<Tracking> RandomTracker::track(const cv::Mat &image) {
-    if (!detector) {
-        throw NoAssociatedDetector();
-    }
-    std::vector<Detection> detections = detector->detect(image);
-    return track(detections);
-}
 
 std::vector<Tracking> RandomTracker::track(const std::vector<Detection> &detections) {
     std::vector<Tracking> associatedDetections;

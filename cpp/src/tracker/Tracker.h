@@ -5,8 +5,6 @@
 #include "../util/Detection.h"
 #include "../util/Tracking.h"
 
-#include <opencv2/core/mat.hpp>
-
 #include <vector>
 
 class Tracker {
@@ -14,8 +12,6 @@ public:
     Tracker() = default;
 
     virtual ~Tracker() = default;
-
-    virtual std::vector<Tracking> track(const cv::Mat &image) = 0;
 
     virtual std::vector<Tracking> track(const std::vector<Detection> &detections) = 0;
 
