@@ -11,9 +11,9 @@ KalmanPredictor::KalmanPredictor(const Detection &initialState)
           timeSinceUpdate(0),
           hitStreak(0) {
     dlib::matrix<double, numStates, numStates> F; // System dynamics matrix
-    dlib::matrix<double, numMeas, numStates> H; // Output matrix
+    dlib::matrix<double, numObservations, numStates> H; // Output matrix
     dlib::matrix<double, numStates, numStates> Q; // Process noise covariance
-    dlib::matrix<double, numMeas, numMeas> R; // Measurement noise covariance
+    dlib::matrix<double, numObservations, numObservations> R; // Measurement noise covariance
     dlib::matrix<double, numStates, numStates> P; // Estimate error covariance
 
     // define constant velocity model
@@ -52,13 +52,13 @@ KalmanPredictor::KalmanPredictor(const Detection &initialState)
             0, 0, 0, 0, 0, 10000, 0,
             0, 0, 0, 0, 0, 0, 10000;
 
-    filter = std::make_shared<dlib::kalman_filter<numStates, numMeas>>(dlib::kalman_filter<numStates, numMeas>());
+    filter = std::make_shared<dlib::kalman_filter<numStates, numObservations>>(dlib::kalman_filter<numStates, numObservations>());
     filter->set_transition_model(F);
     filter->set_observation_model(H);
     filter->set_process_noise(Q);
     filter->set_measurement_noise(R);
     filter->set_estimation_error_covariance(P);
-    dlib::matrix<double, numMeas, 1> x0(boundingBoxToMeas(initialState.bb));
+    dlib::matrix<double, numObservations, 1> x0(boundingBoxToMeas(initialState.bb));
     filter->update(x0);
 }
 
@@ -110,14 +110,14 @@ int KalmanPredictor::getHitStreak() const {
     return hitStreak;
 }
 
-const int KalmanPredictor::getID() const {
+int KalmanPredictor::getID() const {
     return ID;
 }
 
 // Functions
 
-dlib::matrix<double, KalmanPredictor::numMeas, 1> KalmanPredictor::boundingBoxToMeas(const BoundingBox &bb) {
-    dlib::matrix<double, KalmanPredictor::numMeas, 1> z;
+dlib::matrix<double, KalmanPredictor::numObservations, 1> KalmanPredictor::boundingBoxToMeas(const BoundingBox &bb) {
+    dlib::matrix<double, KalmanPredictor::numObservations, 1> z;
     z = bb.cx, bb.cy, bb.area(), bb.ratio();
     return z;
 }

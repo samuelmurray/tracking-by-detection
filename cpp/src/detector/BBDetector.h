@@ -22,11 +22,11 @@ public:
     std::vector<Detection> detect(const cv::Mat &image) override;
 
 private:
-    void SetMean(const std::string &mean_file, const std::string &mean_value);
+    void setMean(const std::string &mean_file, const std::string &mean_value);
 
-    void WrapInputLayer(std::vector<cv::Mat> *input_channels);
+    void wrapInputLayer(std::vector<cv::Mat> *input_channels);
 
-    void Preprocess(const cv::Mat &img, std::vector<cv::Mat> *input_channels);
+    void preprocess(const cv::Mat &img, std::vector<cv::Mat> *input_channels);
 
     std::shared_ptr<caffe::Net<float>> net_;
     cv::Size input_geometry_;

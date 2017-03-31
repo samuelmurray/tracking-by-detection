@@ -1,5 +1,5 @@
-#ifndef CPP_DETECTIONPREDICTOR_H
-#define CPP_DETECTIONPREDICTOR_H
+#ifndef CPP_KALMANPREDICTOR_H
+#define CPP_KALMANPREDICTOR_H
 
 
 #include "../../util/Detection.h"
@@ -13,7 +13,7 @@
 class KalmanPredictor {
 public:
     static constexpr int numStates = 7; // [x, y, area, ratio, vx, vy, area_change]
-    static constexpr int numMeas = 4; // [x, y, area, ratio]
+    static constexpr int numObservations = 4; // [x, y, area, ratio]
     static std::map<std::string, int> classCount;
 
 public:
@@ -31,34 +31,43 @@ public:
     KalmanPredictor &operator=(KalmanPredictor &) = delete;
 
     /**
-     * Advances the state vector.
+     * Advances the state vector using current estimation.
      */
     void update();
 
     /**
-     * Updates the state vector with observed bbox.
+     * Updates and advances the state vector using given Detection as observation.
      */
     void update(const Detection &det);
 
     /**
-     * Returns the current bounding box estimate.
+     * Returns the predicted next state as Detection.
      */
     Detection getPredictedNextDetection() const;
 
+    /**
+     * Returns the current state as Tracking.
+     */
     Tracking getTracking() const;
 
     int getHitStreak() const;
 
     int getTimeSinceUpdate() const;
 
-    const int getID() const;
+    int getID() const;
 
+    /**
+     * Converts a state vector to a BoundingBox.
+     */
     static BoundingBox stateToBoundingBox(const dlib::matrix<double, numStates, 1> &state);
 
-    static dlib::matrix<double, numMeas, 1> boundingBoxToMeas(const BoundingBox &bb);
+    /**
+     * Converts a BoundingBox to an observation vector.
+     */
+    static dlib::matrix<double, numObservations, 1> boundingBoxToMeas(const BoundingBox &bb);
 
 private:
-    std::shared_ptr<dlib::kalman_filter<numStates, numMeas>> filter;
+    std::shared_ptr<dlib::kalman_filter<numStates, numObservations>> filter;
     std::string className;
     int ID;
     int timeSinceUpdate;
@@ -68,4 +77,4 @@ private:
 std::ostream &operator<<(std::ostream &os, const KalmanPredictor &kp);
 
 
-#endif //CPP_DETECTIONPREDICTOR_H
+#endif //CPP_KALMANPREDICTOR_H

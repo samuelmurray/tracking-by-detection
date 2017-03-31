@@ -14,16 +14,20 @@ public:
 
     virtual ~Detector() = default;
 
-    Detector(Detector &&rhs) = default;
+    // Prevent copying and moving
+    Detector(Detector &&rhs) = delete;
 
-    Detector &operator=(Detector &&rhs) = default;
+    Detector &operator=(Detector &&rhs) = delete;
 
-    virtual std::vector<Detection> detect(const cv::Mat &image) = 0;
-
-    // Prevent copying
     Detector(const Detector &) = delete;
 
     Detector &operator=(const Detector &) = delete;
+
+    /**
+     * Detects objects in a given image.
+     * Returns the Detections.
+     */
+    virtual std::vector<Detection> detect(const cv::Mat &image) = 0;
 };
 
 

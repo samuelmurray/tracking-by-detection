@@ -13,6 +13,7 @@ struct Tracking {
 
     Tracking(Tracking &&rhs);
 
+    // Prevent assignment
     Tracking &operator=(const Tracking &rhs) = delete;
 
     Tracking &operator=(Tracking &&rhs) = delete;

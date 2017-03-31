@@ -13,8 +13,6 @@ public:
 
     virtual ~Tracker() = default;
 
-    virtual std::vector<Tracking> track(const std::vector<Detection> &detections) = 0;
-
     // Prevent copying and moving
     Tracker(const Tracker &) = delete;
 
@@ -23,6 +21,12 @@ public:
     Tracker &operator=(const Tracker &) = delete;
 
     Tracker &operator=(const Tracker &&) = delete;
+
+    /**
+     * For each timestep, tracks the given Detections.
+     * Returns the Trackings.
+     */
+    virtual std::vector<Tracking> track(const std::vector<Detection> &detections) = 0;
 };
 
 

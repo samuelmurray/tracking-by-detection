@@ -1,16 +1,5 @@
 #include "RandomDetector.h"
 
-// Constructors
-
-RandomDetector::RandomDetector() : Detector() {}
-
-RandomDetector::RandomDetector(RandomDetector &&rhs) : Detector(std::move(rhs)) {}
-
-RandomDetector &RandomDetector::operator=(RandomDetector &&rhs) {
-    Detector::operator=(std::move(rhs));
-    return *this;
-}
-
 // Methods
 
 std::vector<Detection> RandomDetector::detect(const cv::Mat &image) {

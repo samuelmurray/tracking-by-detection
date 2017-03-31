@@ -13,6 +13,7 @@ struct Detection {
 
     Detection(Detection &&rhs);
 
+    // Prevent assignment
     Detection &operator=(const Detection &rhs) = delete;
 
     Detection &operator=(Detection &&rhs) = delete;

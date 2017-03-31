@@ -6,12 +6,12 @@
 
 class RandomDetector : public Detector {
 public:
-    RandomDetector();
+    RandomDetector() = default;
 
-    RandomDetector(RandomDetector &&rhs);
-
-    RandomDetector &operator=(RandomDetector &&rhs);
-
+    /**
+      * Returns a set of (semi) random Detections, independent of the image.
+      * Only used as a placeholder for a real Detector, e.g. for debugging.
+      */
     std::vector<Detection> detect(const cv::Mat &image) override;
 };
 

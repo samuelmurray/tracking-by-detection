@@ -6,7 +6,6 @@
 
 class Affinity {
 public:
-
     /**
      * Large value indicates similarity
      * From: Simple Online and Realtime Tracking
