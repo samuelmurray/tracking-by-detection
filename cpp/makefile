@@ -37,24 +37,27 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 # Input/Output files
 SOURCEDIR = src
 BUILDDIR = build
+MAINDIR = examples
 #SOURCES = $(wildcard $(SOURCEDIR)/*.cpp $(SOURCEDIR)/**/*.cpp)
-SOURCES := $(shell find $(SOURCEDIR) -name "*.cpp")
+SOURCES := $(shell find $(SOURCEDIR) -name "*.cpp" -not -path *examples/*)
 OBJECTS = $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
 TARGET = main.out
 
 # For compilation without Caffe
 nocaffe: CAFFE_DEPOBJ = detector/BBDetector.o
 nocaffe: OBJECTS := $(filter-out $(addprefix $(BUILDDIR)/,$(CAFFE_DEPOBJ)), $(OBJECTS))
+nocaffe: OBJECTS += $(BUILDDIR)/$(MAINDIR)/TrackDetections.o
 
 # Compilation options
 MKDIRIFNOTEXIST = @test -d $(@D) || mkdir -p $(@D)
 COMPILE = $(CXX) $(DEPFLAGS) $(CXXFLAGS) -c
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
-caffe nocaffe: $(TARGET)
+caffe: $(TARGET)
+nocaffe: $(TARGET)
 
 .SECONDEXPANSION:
-.SECONDARY: $(OBJECTS)
+
 %.out: $$(OBJECTS) 
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
@@ -66,6 +69,7 @@ $(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(SOURCEDIR)/%.h $(DEPDIR)/%.d | $(BUILDDIR)
 $(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(DEPDIR)/%.d | $(BUILDDIR)/$$(filter-out ./,$$(dir %)).dir
 	$(COMPILE) $< -o $@
 	$(POSTCOMPILE)
+.PRECIOUS: $(BUILDDIR)/%.o
 
 %.dir:
 	$(MKDIRIFNOTEXIST)
