@@ -2,7 +2,7 @@
 
 # Path to where CUDA is installed
 prefix=/home/ubuntu/cuda-7.0
-# Path to include files
+# Path to where include files are
 includedir=${prefix}/include
 
 Name: CUDA

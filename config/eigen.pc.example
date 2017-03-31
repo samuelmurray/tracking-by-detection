@@ -2,10 +2,10 @@
 
 # Path to where Eigen is installed
 prefix=/usr/local/Cellar/eigen/3.3.3
-# Path to include files
+# Path to where include files are
 includedir=${prefix}/include/eigen3
 
-Name: CUDA
+Name: Eigen
 Description: Eigen is a C++ template library for linear algebra
 Version: 3.3.3
 Cflags: -isystem ${includedir}

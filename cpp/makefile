@@ -6,7 +6,9 @@ LDFLAGS =
 # Print variable
 print-%  : ; @echo $* = $($*)
 
-# OpenCV - set PKG_CONFIG_PATH to folder containing opencv.pc
+# External libraries
+export PKG_CONFIG_PATH := ../config:$(PKG_CONFIG_PATH)
+# OpenCV
 CXXFLAGS += `pkg-config --cflags opencv`
 LDFLAGS += `pkg-config --libs opencv`
 
@@ -17,8 +19,6 @@ LDFLAGS += `pkg-config --libs dlib-1`
 # openblas
 CXXFLAGS += `pkg-config --cflags openblas`
 LDFLAGS += `pkg-config --libs openblas`
-
-export PKG_CONFIG_PATH := ../config:$(PKG_CONFIG_PATH)
 
 # For compilation with Caffe
 # Caffe

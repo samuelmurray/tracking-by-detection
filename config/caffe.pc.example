@@ -4,7 +4,7 @@
 prefix=/home/samuel/caffe
 # Path to where libcaffe.so is
 libdir=${prefix}/.build_release/lib
-# Path to include files
+# Path to where include files are
 includedir=${prefix}/include
 
 Name: Caffe
