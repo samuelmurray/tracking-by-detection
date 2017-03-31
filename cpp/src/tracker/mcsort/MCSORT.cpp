@@ -1,6 +1,6 @@
 #include "MCSORT.h"
 
-#include "../../util/Affinity.h"
+#include "../Affinity.h"
 
 #include <dlib/optimization.h>
 
