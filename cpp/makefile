@@ -81,7 +81,9 @@ $(DEPDIR)/%.d:
 
 include $(wildcard $(patsubst %,$(DEPDIR)/%.d,$(basename $(SOURCES))))
 
-.PHONY: clean
+.PHONY: run clean
+run:
+	./$(TARGET) -f ../data/train.txt
 clean:
 	rm -rf $(BUILDDIR)/* 
 	rm -rf $(DEPDIR)/*
