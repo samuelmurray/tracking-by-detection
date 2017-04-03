@@ -41,19 +41,21 @@ std::pair<int, Detection> DetectionFileParser::parseLine(const std::string &line
 
 std::pair<int, Detection> DetectionFileParser::parseMOTLine(const std::string &line) {
     std::istringstream is(line);
-    int frame, x1, y1, width, height;
-    int id, conf, x, y, z; // Unused
+    int frame;
+    int id; // Unused
+    double x1, y1, width, height;
+    double conf, x, y, z; // Unused
     std::string className = "person";
     if (!(is >> frame && is.ignore() &&
-            is >> id && is.ignore() &&
-            is >> x1 && is.ignore() &&
-            is >> y1 && is.ignore() &&
-            is >> width && is.ignore() &&
-            is >> height && is.ignore() &&
-            is >> conf && is.ignore() &&
-            is >> x && is.ignore() &&
-            is >> y && is.ignore() &&
-            is >> z)) {
+          is >> id && is.ignore() &&
+          is >> x1 && is.ignore() &&
+          is >> y1 && is.ignore() &&
+          is >> width && is.ignore() &&
+          is >> height && is.ignore() &&
+          is >> conf && is.ignore() &&
+          is >> x && is.ignore() &&
+          is >> y && is.ignore() &&
+          is >> z)) {
         throw std::invalid_argument(
                 "Each line must be on following format: "
                         "<frame>,<id>,<x_topleft>,<y_topleft>,<width>,<height>,<conf>,<x>,<y>,<z>");
