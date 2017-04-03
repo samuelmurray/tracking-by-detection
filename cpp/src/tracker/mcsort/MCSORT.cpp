@@ -14,6 +14,8 @@ MCSORT::MCSORT() : MCSORT(1, 3) {}
 MCSORT::MCSORT(int maxAge, int minHits)
         : maxAge(maxAge), minHits(minHits) {}
 
+MCSORT::~MCSORT() {}
+
 // Methods
 
 std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
@@ -46,7 +48,7 @@ std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
 
     // Create and initialise new predictors for unmatched detections
     for (auto id : association.unmatchedDetections) {
-        KalmanPredictor predictor(detections.at(id));
+        KalmanPredictor predictor(detections.at(id), ++classCount[detections.at(id).className]);
         predictors.push_back(std::move(predictor));
     }
 

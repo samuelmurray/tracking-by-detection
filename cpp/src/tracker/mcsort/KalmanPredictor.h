@@ -14,10 +14,9 @@ class KalmanPredictor {
 public:
     static constexpr int numStates = 7; // [x, y, area, ratio, vx, vy, area_change]
     static constexpr int numObservations = 4; // [x, y, area, ratio]
-    static std::map<std::string, int> classCount;
 
 public:
-    KalmanPredictor(const Detection &initialState);
+    KalmanPredictor(const Detection &initialState, int ID);
 
     virtual ~KalmanPredictor() = default;
 

@@ -13,6 +13,8 @@ public:
 
     MCSORT(int maxAge, int minHits);
 
+    virtual ~MCSORT();
+
     /**
       * Uses a linear velocity Kalman filters to predict locations of objects from previous frame.
       * Associates detections to Kalman filters using an Affinity measure and the Hungarian Algorithm.
@@ -23,6 +25,7 @@ private:
     const int maxAge;
     const int minHits;
     std::vector<KalmanPredictor> predictors;
+    std::map<std::string, int> classCount;
     int frameCount = 0;
 
     /**

@@ -1,13 +1,11 @@
 #include "KalmanPredictor.h"
 
-std::map<std::string, int> KalmanPredictor::classCount;
-
 // Constructors
 
-KalmanPredictor::KalmanPredictor(const Detection &initialState)
+KalmanPredictor::KalmanPredictor(const Detection &initialState, int ID)
         : filter(nullptr),
           className(initialState.className),
-          ID(++classCount[initialState.className]),
+          ID(ID),
           timeSinceUpdate(0),
           hitStreak(0) {
     dlib::matrix<double, numStates, numStates> F; // System dynamics matrix
@@ -52,7 +50,8 @@ KalmanPredictor::KalmanPredictor(const Detection &initialState)
             0, 0, 0, 0, 0, 10000, 0,
             0, 0, 0, 0, 0, 0, 10000;
 
-    filter = std::make_shared<dlib::kalman_filter<numStates, numObservations>>(dlib::kalman_filter<numStates, numObservations>());
+    filter = std::make_shared<dlib::kalman_filter<numStates, numObservations>>(
+            dlib::kalman_filter<numStates, numObservations>());
     filter->set_transition_model(F);
     filter->set_observation_model(H);
     filter->set_process_noise(Q);
