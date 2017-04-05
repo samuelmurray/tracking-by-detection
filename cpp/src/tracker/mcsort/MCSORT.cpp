@@ -4,9 +4,6 @@
 
 #include <dlib/optimization.h>
 
-using std::cout;
-using std::endl;
-
 // Constructors
 
 MCSORT::MCSORT() : MCSORT(1, 3) {}
@@ -21,21 +18,7 @@ MCSORT::~MCSORT() {}
 std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
     frameCount++;
 
-    cout << "---DETECTIONS---" << endl;
-    for (auto it = detections.begin(); it != detections.end(); ++it) {
-        cout << *it << endl;
-    }
-
-    cout << "---PREDICTIONS---" << endl;
-    for (auto it = predictors.begin(); it != predictors.end(); ++it) {
-        cout << *it << endl;
-    }
-
     Association association = associateDetectionsToPredictors(detections, predictors, Affinity::iou);
-    cout << endl << "Number of matches and unmatched detections and predictors:" << endl;
-    cout << association.matches.size() << " " <<
-         association.unmatchedDetections.size() << " " <<
-         association.unmatchedPredictors.size() << endl;
 
     // Update matched predictors with assigned detections
     for (auto match : association.matches) {
@@ -82,7 +65,6 @@ MCSORT::Association MCSORT::associateDetectionsToPredictors(
     std::vector<int> unmatchedPredictors;
 
     if (predictors.empty()) {
-        cout << "(No predictors)" << endl;
         for (int i = 0; i < detections.size(); ++i)
             unmatchedDetections.push_back(i);
         return MCSORT::Association{matches, unmatchedDetections, unmatchedPredictors};
@@ -102,7 +84,6 @@ MCSORT::Association MCSORT::associateDetectionsToPredictors(
     } else if (cost.nc() > cost.nr()) {
         cost = dlib::join_cols(cost, dlib::zeros_matrix<int>(cost.nc() - cost.nr(), 1));
     }
-    cout << "---COST MATRIX---" << endl << cost;
 
     std::vector<long> assignment = dlib::max_cost_assignment(cost);
 
