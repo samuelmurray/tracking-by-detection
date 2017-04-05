@@ -48,13 +48,13 @@ MAINDIR = examples
 
 # For compilation of TrackImages.cpp
 trackimages: SOURCES := $(shell find $(SOURCEDIR) -name "*.cpp" -not -path *examples/*)
+trackimages: SOURCES += $(SOURCEDIR)/$(MAINDIR)/TrackImages.cpp
 trackimages: OBJECTS := $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
-trackimages: OBJECTS += $(BUILDDIR)/$(MAINDIR)/TrackImages.o
 
 # For compilation of TrackDetections.cpp
 trackdetections: SOURCES := $(shell find $(SOURCEDIR) -name "*.cpp" -not -path *examples/* -not -path *detector/*)
+trackdetections: SOURCES += $(SOURCEDIR)/$(MAINDIR)/TrackDetections.cpp
 trackdetections: OBJECTS := $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
-trackdetections: OBJECTS += $(BUILDDIR)/$(MAINDIR)/TrackDetections.o
 
 # Compilation options
 MKDIRIFNOTEXIST = @test -d $(@D) || mkdir -p $(@D)
