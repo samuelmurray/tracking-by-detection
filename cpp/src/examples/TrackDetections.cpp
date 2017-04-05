@@ -10,19 +10,17 @@
 #include <unistd.h>
 #include <chrono>
 
-using namespace std;
-
 const char *USAGE_MESSAGE = "Usage: %s [-g] [-s sequencePath] [-f configFile]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 
 int track(const boost::filesystem::path &inputPath,
           const boost::filesystem::path &outputPath) {
-    ifstream inputStream(inputPath.string());
+    std::ifstream inputStream(inputPath.string());
     if (!inputStream.is_open()) {
         fprintf(stderr, OPEN_FILE_MESSAGE, inputPath.c_str());
         exit(EXIT_FAILURE);
     }
-    ofstream outputStream;
+    std::ofstream outputStream;
     outputStream.open(outputPath.string());
     if (!outputStream.is_open()) {
         fprintf(stderr, OPEN_FILE_MESSAGE, outputPath.c_str());
@@ -30,16 +28,13 @@ int track(const boost::filesystem::path &inputPath,
     }
     int cumulativeDuration = 0;
     MCSORT tracker;
-    vector<Tracking> trackings;
+    std::vector<Tracking> trackings;
     for (auto const &detMap : DetectionFileParser::parseMOTFile(inputStream)) {
-        cout << "NEW FRAME - " << detMap.first << endl;
-        auto startTime = chrono::steady_clock::now();
+        auto startTime = std::chrono::steady_clock::now();
         trackings = tracker.track(detMap.second);
-        auto duration = chrono::steady_clock::now() - startTime;
-        cumulativeDuration += chrono::duration_cast<chrono::milliseconds>(duration).count();
-        cout << "---TRACKINGS---" << endl;
+        auto duration = std::chrono::steady_clock::now() - startTime;
+        cumulativeDuration += std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
         for (auto it = trackings.begin(); it != trackings.end(); ++it) {
-            cout << *it << endl;
             outputStream << detMap.first << ","
                          << it->ID << ","
                          << it->bb.x1() << ","
@@ -48,7 +43,6 @@ int track(const boost::filesystem::path &inputPath,
                          << it->bb.height << ","
                          << "1,-1,-1,-1\n";
         }
-        cout << endl;
     }
     outputStream.close();
     return cumulativeDuration;
@@ -56,13 +50,13 @@ int track(const boost::filesystem::path &inputPath,
 
 int track(const boost::filesystem::path &datasetsDir,
           const boost::filesystem::path &resultsDir,
-          const string &sequenceName,
+          const std::string &sequenceName,
           bool useGroundTruth) {
     boost::filesystem::path inputPath = datasetsDir / sequenceName;
     boost::filesystem::path outputDir = resultsDir;
     if (useGroundTruth) {
         inputPath /= "gt/gt.txt";
-        outputDir /= "gt" ;
+        outputDir /= "gt";
     } else {
         inputPath /= "det/det.txt";
         outputDir /= "det";
@@ -75,52 +69,55 @@ int track(const boost::filesystem::path &datasetsDir,
 }
 
 int main(int argc, char **argv) {
-    boost::filesystem::path DATA_DIR = boost::filesystem::current_path().parent_path() / "data";
+    const boost::filesystem::path dataDir = boost::filesystem::current_path().parent_path() / "data";
     bool useGroundTruth = false;
     int opt;
-    string sequencePath;
-    string configFile;
+    std::string sequenceName;
+    std::string configFileName;
     while ((opt = getopt(argc, argv, "gs:f:")) != -1) {
         switch (opt) {
             case 'g':
                 useGroundTruth = true;
                 break;
             case 's':
-                sequencePath = optarg;
+                sequenceName = optarg;
                 break;
             case 'f':
-                configFile = optarg;
+                configFileName = optarg;
                 break;
             default:
                 fprintf(stderr, USAGE_MESSAGE, argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
-    if (sequencePath != "" && configFile != "") {
+    if (sequenceName != "" && configFileName != "") {
         fprintf(stderr, "You can't specify both -s and -f\n");
-    } else if (sequencePath != "") {
-        track(sequencePath, boost::filesystem::current_path() / "result.txt");
+    } else if (sequenceName != "") {
+        track(sequenceName, boost::filesystem::current_path() / "result.txt");
         exit(EXIT_SUCCESS);
-    } else if (configFile != "") {
-        boost::filesystem::path sequencesFilePath = DATA_DIR / configFile;
-        ifstream detectionFile(sequencesFilePath.string());
-        if (detectionFile.is_open()) {
-            string line;
-            getline(detectionFile, line);
-            boost::filesystem::path datasetsDir = DATA_DIR / line;
-            getline(detectionFile, line);
-            boost::filesystem::path resultsDir = DATA_DIR / line;
+    } else if (configFileName != "") {
+        boost::filesystem::path configFilePath = dataDir / configFileName;
+        std::ifstream configFile(configFilePath.string());
+        if (configFile.is_open()) {
+            std::string line;
+            getline(configFile, line);
+            boost::filesystem::path sequencesDir = dataDir / line;
+            getline(configFile, line);
+            boost::filesystem::path resultsDir = dataDir / line;
 
+            int duration;
             int cumulativeDuration = 0;
-            while (getline(detectionFile, sequencePath)) {
-                cumulativeDuration += track(datasetsDir, resultsDir, sequencePath, useGroundTruth);
+            while (getline(configFile, sequenceName)) {
+                std::cout << "Sequence: " << sequenceName << std::endl;
+                duration = track(sequencesDir, resultsDir, sequenceName, useGroundTruth);
+                std::cout << "Duration: " << duration << "ms" << std::endl;
+                cumulativeDuration += duration;
             }
-            detectionFile.close();
-            cout << "---FINISHED---" << endl;
-            cout << "Total duration: " << cumulativeDuration << "ms" << endl;
+            configFile.close();
+            std::cout << "Total duration: " << cumulativeDuration << "ms" << std::endl;
             exit(EXIT_SUCCESS);
         }
-        fprintf(stderr, OPEN_FILE_MESSAGE, configFile.c_str());
+        fprintf(stderr, OPEN_FILE_MESSAGE, configFileName.c_str());
     }
 
     fprintf(stderr, USAGE_MESSAGE, argv[0]);
