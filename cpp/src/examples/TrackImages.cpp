@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <chrono>
 
-const char *USAGE_MESSAGE = "Usage: %s [-g] [-s sequencePath] [-f configFile]\n";
+const char *USAGE_MESSAGE = "Usage: %s [-s sequencePath] [-f configFile]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 
 int track(const boost::filesystem::path &inputDir,
