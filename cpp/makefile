@@ -1,13 +1,14 @@
+SHELL = /bin/sh
+
 # Compiler options
 CXX = g++
 CXXFLAGS = -std=c++11 -g -Wall -pedantic
 LDFLAGS =
-
-# Default
-default: trackdetections
+DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
 # External libraries
 export PKG_CONFIG_PATH := ../config:$(PKG_CONFIG_PATH)
+
 # OpenCV
 CXXFLAGS += `pkg-config --cflags opencv`
 LDFLAGS += `pkg-config --libs opencv`
@@ -25,50 +26,59 @@ CXXFLAGS += `pkg-config --cflags boost`
 LDFLAGS += `pkg-config --libs boost`
 
 # For compilation with Caffe
-trackcaffe: trackimages
+use_caffe = false
+ifeq ($(use_caffe),true)
+	# Caffe
+	CXXFLAGS += -DUSE_CAFFE
+	CXXFLAGS += `pkg-config --cflags caffe`
+	LDFLAGS += `pkg-config --libs caffe`
 
-# Caffe
-trackcaffe: CXXFLAGS += -DUSE_CAFFE
-trackcaffe: CXXFLAGS += `pkg-config --cflags caffe`
-trackcaffe: LDFLAGS += `pkg-config --libs caffe`
+	# Cuda
+	CXXFLAGS += `pkg-config --cflags cuda`
+	LDFLAGS += `pkg-config --libs cuda`
+endif
 
-# Cuda
-trackcaffe: CXXFLAGS += `pkg-config --cflags cuda`
-trackcaffe: LDFLAGS += `pkg-config --libs cuda`
-
-# Create dependency files
-DEPDIR := .d
-$(shell mkdir -p $(DEPDIR) >/dev/null)
-DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
-
-# Input/Output files
+# Directories
 SOURCEDIR = src
 BUILDDIR = build
 MAINDIR = examples
+DEPDIR = .d
 
-# For compilation of TrackImages.cpp
-trackimages: SOURCES := $(shell find $(SOURCEDIR) -name "*.cpp" -not -path *examples/*)
-trackimages: SOURCES += $(SOURCEDIR)/$(MAINDIR)/TrackImages.cpp
-trackimages: OBJECTS := $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
+# Input/Output files
+SOURCES := $(shell find $(SOURCEDIR) -name "*.cpp")
+OBJECTS := $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
 
-# For compilation of TrackDetections.cpp
-trackdetections: SOURCES := $(shell find $(SOURCEDIR) -name "*.cpp" -not -path *examples/* -not -path *detector/*)
-trackdetections: SOURCES += $(SOURCEDIR)/$(MAINDIR)/TrackDetections.cpp
-trackdetections: OBJECTS := $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
+# For building TrackImages.cpp
+detect: OBJECTS := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
+detect: OBJECTS += $(BUILDDIR)/$(MAINDIR)/TrackImages.o
 
-# Compilation options
+# For building TrackDetections.cpp
+track: OBJECTS := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
+track: OBJECTS += $(BUILDDIR)/$(MAINDIR)/TrackDetections.o
+
+# Build instructioncs
 MKDIRIFNOTEXIST = @test -d $(@D) || mkdir -p $(@D)
 COMPILE = $(CXX) $(DEPFLAGS) $(CXXFLAGS) -c
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
-trackimages: trackim.out
-trackdetections: trackdet.out
+# Print variable
+print-% : ; @echo $* = $($*)
+
+# Run target on test data
+run-% : % ; ./$*App.out -f ../data/test.txt
+
+detect: compile detectApp.out
+track: compile trackApp.out
 
 .SECONDEXPANSION:
+# Link target's objects
 %.out: $$(OBJECTS) 
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-# I found this neat: | $(BUILDDIR)/$$(filter-out ./,$$(dir %)).dir --- %.dir: ; $(MKDIRIFNOTEXIST)
+# Compile all files
+compile: $(OBJECTS)
+
+# Crazy alternative: [...]%.d | $(BUILDDIR)/$$(filter-out ./,$$(dir %)).dir --- %.dir: ; $(MKDIRIFNOTEXIST)
 $(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(SOURCEDIR)/%.h $(DEPDIR)/%.d
 	$(MKDIRIFNOTEXIST)
 	$(COMPILE) $< -o $@
@@ -86,13 +96,8 @@ $(DEPDIR)/%.d:
 
 include $(wildcard $(patsubst %,$(DEPDIR)/%.d,$(basename $(SOURCES))))
 
-# Print variable
-print-% : ; @echo $* = $($*)
-# Run target on test data
-run-% : ; ./track$*.out -f ../data/test.txt
-
 .PHONY: clean
 clean:
 	rm -rf $(BUILDDIR)/* 
 	rm -rf $(DEPDIR)/*
-	rm *.out
+	rm -f *.out
