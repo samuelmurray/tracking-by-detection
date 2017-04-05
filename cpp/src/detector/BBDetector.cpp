@@ -1,5 +1,7 @@
 #include "BBDetector.h"
 
+#ifdef USE_CAFFE
+
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -201,3 +203,5 @@ void BBDetector::preprocess(const cv::Mat &img,
             << "Input channels are not wrapping the input layer of the network.";
     */
 }
+
+#endif //USE_CAFFE

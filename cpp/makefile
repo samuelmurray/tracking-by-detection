@@ -3,8 +3,8 @@ CXX = g++
 CXXFLAGS = -std=c++11 -g -Wall -pedantic
 LDFLAGS =
 
-# Print variable
-print-%  : ; @echo $* = $($*)
+# Default
+default: trackdetections
 
 # External libraries
 export PKG_CONFIG_PATH := ../config:$(PKG_CONFIG_PATH)
@@ -25,13 +25,16 @@ CXXFLAGS += `pkg-config --cflags boost`
 LDFLAGS += `pkg-config --libs boost`
 
 # For compilation with Caffe
+trackcaffe: trackimages
+
 # Caffe
-trackimages: CXXFLAGS += `pkg-config --cflags caffe`
-trackimages: LDFLAGS += `pkg-config --libs caffe`
+trackcaffe: CXXFLAGS += -DUSE_CAFFE
+trackcaffe: CXXFLAGS += `pkg-config --cflags caffe`
+trackcaffe: LDFLAGS += `pkg-config --libs caffe`
 
 # Cuda
-trackimages: CXXFLAGS += `pkg-config --cflags cuda`
-trackimages: LDFLAGS += `pkg-config --libs cuda`
+trackcaffe: CXXFLAGS += `pkg-config --cflags cuda`
+trackcaffe: LDFLAGS += `pkg-config --libs cuda`
 
 # Create dependency files
 DEPDIR := .d
@@ -42,7 +45,6 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 SOURCEDIR = src
 BUILDDIR = build
 MAINDIR = examples
-TARGET = main.out
 
 # For compilation of TrackImages.cpp
 trackimages: SOURCES := $(shell find $(SOURCEDIR) -name "*.cpp" -not -path *examples/*)
@@ -59,9 +61,8 @@ MKDIRIFNOTEXIST = @test -d $(@D) || mkdir -p $(@D)
 COMPILE = $(CXX) $(DEPFLAGS) $(CXXFLAGS) -c
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
-default: trackdetections
-trackimages: $(TARGET)
-trackdetections: $(TARGET)
+trackimages: trackim.out
+trackdetections: trackdet.out
 
 .SECONDEXPANSION:
 %.out: $$(OBJECTS) 
@@ -85,10 +86,13 @@ $(DEPDIR)/%.d:
 
 include $(wildcard $(patsubst %,$(DEPDIR)/%.d,$(basename $(SOURCES))))
 
-.PHONY: run clean
-run:
-	./$(TARGET) -f ../data/train.txt
+# Print variable
+print-% : ; @echo $* = $($*)
+# Run target on test data
+run-% : ; ./track$*.out -f ../data/test.txt
+
+.PHONY: clean
 clean:
 	rm -rf $(BUILDDIR)/* 
 	rm -rf $(DEPDIR)/*
-	rm -f $(TARGET)
+	rm *.out

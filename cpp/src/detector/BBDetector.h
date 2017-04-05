@@ -2,6 +2,8 @@
 #define CPP_BBDETECTOR_H
 
 
+#ifdef USE_CAFFE
+
 #include "Detector.h"
 
 #include <caffe/caffe.hpp>
@@ -33,6 +35,8 @@ private:
     int num_channels_;
     cv::Mat mean_;
 };
+
+#endif  //USE_CAFFE
 
 
 #endif //CPP_BBDETECTOR_H
