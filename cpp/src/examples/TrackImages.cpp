@@ -18,8 +18,8 @@
 const char *USAGE_MESSAGE = "Usage: %s [-s sequencePath] [-f configFile]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 
-int track(const boost::filesystem::path &inputDir,
-          const boost::filesystem::path &outputPath) {
+std::chrono::duration<double, std::milli> track(const boost::filesystem::path &inputDir,
+                                                const boost::filesystem::path &outputPath) {
     if (!boost::filesystem::is_directory(inputDir)) {
         fprintf(stderr, "TODO: ERROR MESSAGE");
         exit(EXIT_FAILURE);
@@ -31,9 +31,9 @@ int track(const boost::filesystem::path &inputDir,
         exit(EXIT_FAILURE);
     }
 
-    int cumulativeDuration = 0;
     VideoTracker tracker(std::make_shared<RandomDetector>(), std::make_shared<MCSORT>());
     std::vector<Tracking> trackings;
+    std::chrono::duration<double, std::milli> cumulativeDuration = std::chrono::milliseconds::zero();
     int frameCount = 0;
     cv::Mat image;
     for (auto &entry : boost::make_iterator_range(boost::filesystem::directory_iterator(inputDir), {})) {
@@ -41,9 +41,10 @@ int track(const boost::filesystem::path &inputDir,
 
         auto startTime = std::chrono::steady_clock::now();
         trackings = tracker.track(image);
-        auto duration = std::chrono::steady_clock::now() - startTime;
+        auto endTime = std::chrono::high_resolution_clock::now();
 
-        cumulativeDuration += std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+        cumulativeDuration += endTime - startTime;
+
         for (auto it = trackings.begin(); it != trackings.end(); ++it) {
             outputStream << frameCount << ","
                          << it->ID << ","
@@ -59,9 +60,9 @@ int track(const boost::filesystem::path &inputDir,
     return cumulativeDuration;
 }
 
-int track(const boost::filesystem::path &datasetsDir,
-          const boost::filesystem::path &resultsDir,
-          const std::string &sequenceName) {
+std::chrono::duration<double, std::milli> track(const boost::filesystem::path &datasetsDir,
+                                                const boost::filesystem::path &resultsDir,
+                                                const std::string &sequenceName) {
     boost::filesystem::path inputDir = datasetsDir / sequenceName;
     boost::filesystem::path outputDir = resultsDir;
     inputDir /= "img1";
@@ -106,16 +107,20 @@ int main(int argc, char **argv) {
             std::getline(configFile, line);
             boost::filesystem::path resultsDir = dataDir / line;
 
-            int duration;
-            int cumulativeDuration = 0;
+            std::chrono::duration<double, std::milli> duration;
+            std::chrono::duration<double, std::milli> cumulativeDuration;
             while (std::getline(configFile, sequenceName)) {
                 std::cout << "Sequence: " << sequenceName << std::endl;
                 duration = track(sequencesDir, resultsDir, sequenceName);
-                std::cout << "Duration: " << duration << "s" << std::endl;
+                std::cout << "Duration: "
+                          << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()
+                          << "ms\n";
                 cumulativeDuration += duration;
             }
             configFile.close();
-            std::cout << "Total duration: " << cumulativeDuration << "s" << std::endl;
+            std::cout << "Total duration: "
+                      << std::chrono::duration_cast<std::chrono::milliseconds>(cumulativeDuration).count()
+                      << "ms\n";
             exit(EXIT_SUCCESS);
         }
         fprintf(stderr, OPEN_FILE_MESSAGE, configFileName.c_str());
