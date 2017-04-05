@@ -2,6 +2,8 @@
 #include "../tracker/mcsort/MCSORT.h"
 #include "../util/DetectionFileParser.h"
 
+#include <boost/filesystem.hpp>
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -10,19 +12,18 @@
 
 using namespace std;
 
-static bool USE_GROUND_TRUTH = false;
-static string DATA_DIR = "../data";
 const char *USAGE_MESSAGE = "Usage: %s [-g] [-s sequencePath] [-f configFile]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 
-int track(const string &inputPath, const string &outputPath) {
-    ifstream inputStream(inputPath);
+int track(const boost::filesystem::path &inputPath,
+          const boost::filesystem::path &outputPath) {
+    ifstream inputStream(inputPath.string());
     if (!inputStream.is_open()) {
         fprintf(stderr, OPEN_FILE_MESSAGE, inputPath.c_str());
         exit(EXIT_FAILURE);
     }
     ofstream outputStream;
-    outputStream.open(outputPath);
+    outputStream.open(outputPath.string());
     if (!outputStream.is_open()) {
         fprintf(stderr, OPEN_FILE_MESSAGE, outputPath.c_str());
         exit(EXIT_FAILURE);
@@ -53,28 +54,36 @@ int track(const string &inputPath, const string &outputPath) {
     return cumulativeDuration;
 }
 
-int track(const string &datasetsDir, const string &resultsDir, const string &sequenceName) {
-    string inputPath = datasetsDir + "/" + sequenceName;
-    string outputPath = resultsDir;
-    if (USE_GROUND_TRUTH) {
-        inputPath += "/gt/gt.txt";
-        outputPath += "/gt/" + sequenceName + ".txt";
+int track(const boost::filesystem::path &datasetsDir,
+          const boost::filesystem::path &resultsDir,
+          const string &sequenceName,
+          bool useGroundTruth) {
+    boost::filesystem::path inputPath = datasetsDir / sequenceName;
+    boost::filesystem::path outputDir = resultsDir;
+    if (useGroundTruth) {
+        inputPath /= "gt/gt.txt";
+        outputDir /= "gt" ;
     } else {
-        inputPath += "/det/det.txt";
-        outputPath += "/det/" + sequenceName + ".txt";
+        inputPath /= "det/det.txt";
+        outputDir /= "det";
     }
+    if (!boost::filesystem::is_directory(outputDir)) {
+        boost::filesystem::create_directories(outputDir);
+    }
+    boost::filesystem::path outputPath = outputDir / (sequenceName + ".txt");
     return track(inputPath, outputPath);
 }
 
-
 int main(int argc, char **argv) {
+    boost::filesystem::path DATA_DIR = boost::filesystem::current_path().parent_path() / "data";
+    bool useGroundTruth = false;
     int opt;
     string sequencePath;
     string configFile;
     while ((opt = getopt(argc, argv, "gs:f:")) != -1) {
         switch (opt) {
             case 'g':
-                USE_GROUND_TRUTH = true;
+                useGroundTruth = true;
                 break;
             case 's':
                 sequencePath = optarg;
@@ -90,21 +99,21 @@ int main(int argc, char **argv) {
     if (sequencePath != "" && configFile != "") {
         fprintf(stderr, "You can't specify both -s and -f\n");
     } else if (sequencePath != "") {
-        track(sequencePath, "./result.txt");
+        track(sequencePath, boost::filesystem::current_path() / "result.txt");
         exit(EXIT_SUCCESS);
     } else if (configFile != "") {
-        string sequencesFilePath = DATA_DIR + "/" + configFile;
-        ifstream detectionFile(sequencesFilePath);
+        boost::filesystem::path sequencesFilePath = DATA_DIR / configFile;
+        ifstream detectionFile(sequencesFilePath.string());
         if (detectionFile.is_open()) {
             string line;
             getline(detectionFile, line);
-            string datasetsDir = DATA_DIR + "/" + line;
+            boost::filesystem::path datasetsDir = DATA_DIR / line;
             getline(detectionFile, line);
-            string resultsDir = DATA_DIR + "/" + line;
+            boost::filesystem::path resultsDir = DATA_DIR / line;
 
             int cumulativeDuration = 0;
             while (getline(detectionFile, sequencePath)) {
-                cumulativeDuration += track(datasetsDir, resultsDir, sequencePath);
+                cumulativeDuration += track(datasetsDir, resultsDir, sequencePath, useGroundTruth);
             }
             detectionFile.close();
             cout << "---FINISHED---" << endl;

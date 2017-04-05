@@ -1,0 +1,14 @@
+# Package Information for pkg-config
+
+# Path to where Boost is installed
+prefix=/usr/local/Cellar/boost/1.63.0
+# Path to where libraries are
+libdir=${prefix}/lib
+# Path to where include files are
+includedir=${prefix}/include
+
+Name: Boost
+Description: Boost provides free peer-reviewed portable C++ source libraries
+Version: 1.63.0
+Libs: -L${libdir} -lboost_filesystem -lboost_system
+Cflags: -isystem ${includedir}

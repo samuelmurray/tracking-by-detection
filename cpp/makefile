@@ -20,6 +20,10 @@ LDFLAGS += `pkg-config --libs dlib-1`
 CXXFLAGS += `pkg-config --cflags openblas`
 LDFLAGS += `pkg-config --libs openblas`
 
+# Boost
+CXXFLAGS += `pkg-config --cflags boost`
+LDFLAGS += `pkg-config --libs boost`
+
 # For compilation with Caffe
 # Caffe
 trackimages: CXXFLAGS += `pkg-config --cflags caffe`
