@@ -66,7 +66,7 @@ $ make detect use_caffe=true
 $ ./detectApp.out [-f <config_file>]
 ```
 
-**NOTE:** Calling `make <target>` without passing `use_caffe=true` will make the preprocessor remove all code that uses Caffe. This is to enable compilation without Caffe installed. However, this can lead to problems when `make detect use_caffe=true` is called after `make track`, since the files that use Caffe will not be rebuilt. To prevent this, either pass `use_caffe=true` every time you build, or call `force_rebuild=true` to force all `.o` files to be rebuilt. 
+**NOTE:** Calling `make <target>` without passing `use_caffe=true` will make the preprocessor remove all code that uses Caffe. This is to enable compilation without Caffe installed. However, this can lead to problems when `make detect use_caffe=true` is called after `make track`, since the files that use Caffe will not be rebuilt. To prevent this, either pass `use_caffe=true` every time you compile, or call `force_rebuild=true` to force all `.o` files to be rebuilt. 
 
 ## Integrate in other projects
 * To track objects from pre-existing detections, create an instance of `MCSORT`. No code in `detector/` is needed.  
