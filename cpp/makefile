@@ -47,43 +47,52 @@ DEPDIR = .d
 # Input/Output files
 SOURCES := $(shell find $(SOURCEDIR) -name "*.cpp")
 OBJECTS := $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
+DEPFILES := $(patsubst $(SOURCEDIR)/%.cpp,$(DEPDIR)/%.d,$(SOURCES))
+TARGET_detect := detectApp.out
+TARGET_track := trackApp.out
+TARGETS := $(TARGET_detect) $(TARGET_track)
 
-# For building TrackImages.cpp
-detect: OBJECTS := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
-detect: OBJECTS += $(BUILDDIR)/$(MAINDIR)/TrackImages.o
+# For running DetectAndTrack.cpp
+#detect: OBJECTS := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
+#detect: OBJECTS += $(BUILDDIR)/$(MAINDIR)/DetectAndTrack.o
+OBJECTS_detect := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
+OBJECTS_detect += $(BUILDDIR)/$(MAINDIR)/DetectAndTrack.o
 
-# For building TrackDetections.cpp
-track: OBJECTS := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
-track: OBJECTS += $(BUILDDIR)/$(MAINDIR)/TrackDetections.o
+# For running Track.cpp
+#track: OBJECTS := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
+#track: OBJECTS += $(BUILDDIR)/$(MAINDIR)/Track.o
+OBJECTS_track := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
+OBJECTS_track += $(BUILDDIR)/$(MAINDIR)/Track.o
 
 # Build instructioncs
 MKDIRIFNOTEXIST = @test -d $(@D) || mkdir -p $(@D)
 COMPILE = $(CXX) $(DEPFLAGS) $(CXXFLAGS) -c
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
+# Targets
+.SECONDEXPANSION:
+
+# Instructions
+all:
+	@echo 'Call "make <target>" to build or "make run-<target>" to build and run'
+
 # Print variable
 print-% : ; @echo $* = $($*)
 
-# Run target on test data
-run-% : % ; ./$*App.out -f ../data/test.txt
+# (Build and) run target on test data
+run-% : % ; ./$(TARGET_$*) -f ../data/test.txt
 
-detect: compile detectApp.out
-track: compile trackApp.out
+# Compile and link target
+detect track: compile $$(TARGET_$$@)
 
-.SECONDEXPANSION:
 # Link target's objects
-%.out: $$(OBJECTS) 
+%App.out: $$(OBJECTS_%)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 # Compile all files
 compile: $(OBJECTS)
 
 # Crazy alternative: [...]%.d | $(BUILDDIR)/$$(filter-out ./,$$(dir %)).dir --- %.dir: ; $(MKDIRIFNOTEXIST)
-$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(SOURCEDIR)/%.h $(DEPDIR)/%.d
-	$(MKDIRIFNOTEXIST)
-	$(COMPILE) $< -o $@
-	$(POSTCOMPILE)
-
 $(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(DEPDIR)/%.d
 	$(MKDIRIFNOTEXIST)
 	$(COMPILE) $< -o $@
@@ -92,12 +101,21 @@ $(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(DEPDIR)/%.d
 $(DEPDIR)/%.d:
 	$(MKDIRIFNOTEXIST)
 
-.PRECIOUS: $(BUILDDIR)/%.o $(DEPDIR)/%.d
+# Prevent files from being deleted as intermediate files by make
+.PRECIOUS: $(OBJECTS) $(DEPFILES)
 
-include $(wildcard $(patsubst %,$(DEPDIR)/%.d,$(basename $(SOURCES))))
+# Include dependency files
+include $(wildcard $(DEPFILES))
 
+# Rebuild all object files
+force_rebuild = false
+ifeq ($(force_rebuild),true)
+$(shell rm $(OBJECTS))
+endif
+
+# Remove all generated files
 .PHONY: clean
 clean:
-	rm -rf $(BUILDDIR)/* 
-	rm -rf $(DEPDIR)/*
-	rm -f *.out
+	rm -f $(OBJECTS)
+	rm -f $(DEPFILES)
+	rm -f $(TARGETS)
