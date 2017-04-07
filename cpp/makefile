@@ -80,7 +80,7 @@ all:
 print-% : ; @echo $* = $($*)
 
 # (Build and) run target on test data
-run-% : % ; ./$(TARGET_$*) -f ../data/test.txt
+run-% : % ; ./$(TARGET_$*) -f test.txt
 
 # Compile and link target
 detect track: compile $$(TARGET_$$@)
