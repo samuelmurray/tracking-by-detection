@@ -1,0 +1,11 @@
+prefix=/usr/local/Cellar/dlib/19.4
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: dlib
+Description: Numerical and networking C++ library
+Version: 19.4.0
+Libs: -L${libdir} -ldlib
+Cflags: -isystem${includedir}
+Requires: libpng
