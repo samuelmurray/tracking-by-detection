@@ -5,6 +5,8 @@
 #include "detector/Detector.h"
 #include "tracker/Tracker.h"
 
+#include <memory>
+
 class VideoTracker {
 public:
     VideoTracker(const std::shared_ptr<Detector> &detector, const std::shared_ptr<Tracker> &tracker);

@@ -14,6 +14,7 @@
 #include <vector>
 #include <unistd.h>
 #include <chrono>
+#include <memory>
 
 const char *USAGE_MESSAGE = "Usage: %s [-s sequencePath] [-f configFile]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";

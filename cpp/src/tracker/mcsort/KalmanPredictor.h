@@ -9,6 +9,7 @@
 #include <dlib/filtering.h>
 
 #include <vector>
+#include <memory>
 
 class KalmanPredictor {
 public:
