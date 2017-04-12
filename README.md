@@ -9,27 +9,46 @@ TODO
   * C++11
   * make
   * pkg-config
-* Track detections:
-  * dlib
-  * openblas
-* Detect objects in images:
-  * OpenCV
-  * Caffe
-  * Cuda
+* Tracking:
+  * dlib (≥19.4)
+* Detection:
+  * OpenCV (≥3.2)
+  * Caffe<sup>\*</sup>
+  * Cuda<sup>\*</sup> (≥7)
 * Run demos:
-  * Boost
+  * Boost (≥1.63)
+
+<sup>\*</sup>For instructions on how to install `Caffe` and `Cuda`, see **Configure**.
 
 #### Mac
-All dependencies can be installed with [Homebrew](https://brew.sh/) using:
+Use [Homebrew](https://brew.sh/) to build packages.
+
+To install `OpenCV`, follow [this tutorial](http://www.pyimagesearch.com/2016/12/19/install-opencv-3-on-macos-with-homebrew-the-easy-way/).
+
+Remaining dependencies can be installed with:
 ```
 $ brew install <package>
 ```
 
+It might be possible to build all packages yourself, without `Homebrew`. Please refer to the instructions for **Linux** below.
+
 #### Linux
-Hopefully everything can be installed with `apt-get`.
+To install `boost`, see the [official documentation](http://www.boost.org/doc/libs/1_63_0/more/getting_started/unix-variants.html).
+
+To install `OpenCV`, see the [official documentation](http://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html).
+
+To install `dlib`, download and unpack it from [here](http://dlib.net/). Build as a shared library with:
+```
+$ cd dclib/dlib
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+$ sudo make install
+```
 
 #### Windows
-Not tested.
+Not tested. Please refer to the instructions for **Linux** above; some packages have similar guides for Windows.
 
 ## Configure
 
@@ -42,7 +61,7 @@ The following directories should be present in root:
 * `python` - Extra Python code. Not needed for main project.
 
 #### pkg-config
-Make sure `PKG_CONFIG_PATH` includes the paths to the `.pc` files for all dependencies. Alternatively, copy and modify the `.pc.example` files in `config/`. Test if `pkg-config` can find all packages:
+Make sure `PKG_CONFIG_PATH` includes the paths to the `.pc` files for all dependencies. Alternatively, copy and modify the `.pc.example` files in `config/`. Test if `pkg-config` can find `.pc` files for all dependencies, including custom ones in `config/`:
 ```
 $ make test
 ```
@@ -66,7 +85,7 @@ $ make detect use_caffe=true
 $ ./detectApp.out [-f <config_file>]
 ```
 
-**NOTE:** Calling `make <target>` without passing `use_caffe=true` will make the preprocessor remove all code that uses Caffe. This is to enable compilation without Caffe installed. However, this can lead to problems when `make detect use_caffe=true` is called after `make track`, since the files that use Caffe will not be rebuilt. To prevent this, either pass `use_caffe=true` every time you compile, or call `force_rebuild=true` to force all `.o` files to be rebuilt. 
+**NOTE:** Calling `make <target>` without passing `use_caffe=true` will make the preprocessor remove all code that uses Caffe. This is to enable compilation without Caffe installed. However, this can lead to problems when `make detect use_caffe=true` is called after `make track`, since the files that use Caffe will not be rebuilt. To prevent this, either pass `use_caffe=true` every time you compile, or call `force_rebuild=true` to force all `.o` files to be rebuilt.
 
 ## Integrate in other projects
 * To track objects from pre-existing detections, create an instance of `MCSORT`. No code in `detector/` is needed.  
