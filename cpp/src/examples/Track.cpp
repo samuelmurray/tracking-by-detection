@@ -36,7 +36,7 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
         trackings = tracker.track(detMap.second);
         auto endTime = std::chrono::high_resolution_clock::now();
 
-        cumulativeDuration += endTime - startTime;
+        cumulativeDuration += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(endTime - startTime);
 
         for (auto it = trackings.begin(); it != trackings.end(); ++it) {
             outputStream << detMap.first << ","

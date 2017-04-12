@@ -40,11 +40,11 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
     for (auto &entry : boost::make_iterator_range(boost::filesystem::directory_iterator(inputDir), {})) {
         image = cv::imread(entry.path().string(), 1);
 
-        auto startTime = std::chrono::steady_clock::now();
+        auto startTime = std::chrono::high_resolution_clock::now();
         trackings = tracker.track(image);
         auto endTime = std::chrono::high_resolution_clock::now();
-
-        cumulativeDuration += endTime - startTime;
+        
+        cumulativeDuration += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(endTime - startTime);
 
         for (auto it = trackings.begin(); it != trackings.end(); ++it) {
             outputStream << frameCount << ","
