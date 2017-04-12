@@ -17,10 +17,6 @@ LDFLAGS += `pkg-config --libs opencv`
 CXXFLAGS += `pkg-config --cflags dlib-1`
 LDFLAGS += `pkg-config --libs dlib-1`
 
-# openblas
-CXXFLAGS += `pkg-config --cflags openblas`
-LDFLAGS += `pkg-config --libs openblas`
-
 # Boost
 CXXFLAGS += `pkg-config --cflags boost`
 LDFLAGS += `pkg-config --libs boost`
