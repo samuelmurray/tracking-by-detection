@@ -1,12 +1,12 @@
 # Package Information for pkg-config
 
 # Path to where CUDA is installed
-prefix=/home/ubuntu/cuda-7.0
+prefix=/path/to/cuda
 # Path to where include files are
 includedir=${prefix}/include
 
 Name: CUDA
 Description: A parallel computing platform and programming model invented by NVIDIA
-Version: 1.0
+Version: 7.0
 Cflags: -isystem ${includedir}
 Libs: -lboost_system -lglog -lgflags

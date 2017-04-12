@@ -1,7 +1,7 @@
 # Package Information for pkg-config
 
 # Path to where Boost is installed
-prefix=/usr/local/Cellar/boost/1.63.0
+prefix=/path/to/boost
 # Path to where libraries are
 libdir=${prefix}/lib
 # Path to where include files are

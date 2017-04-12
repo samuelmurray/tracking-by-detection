@@ -1,8 +1,8 @@
 # Package Information for pkg-config
 
 # Path to where Caffe is installed
-prefix=/home/samuel/caffe
-# Path to where libcaffe.so is
+prefix=/path/to/caffe
+# Path to where libraries are
 libdir=${prefix}/.build_release/lib
 # Path to where include files are
 includedir=${prefix}/include
@@ -11,5 +11,4 @@ Name: Caffe
 Description: Deep learning framework by the BVLC
 Version: 1.0
 Libs: -L${libdir} -lcaffe
-# Libs: += -L/home/samuel/caffe/build/lib -lcaffe
 Cflags: -isystem${includedir} -isystem${prefix}/.build_release/src

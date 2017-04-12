@@ -1,6 +1,10 @@
-prefix=/usr/local/Cellar/dlib/19.4
-exec_prefix=${prefix}
-libdir=${exec_prefix}/lib
+# Package Information for pkg-config
+
+# Path to where dlib is installed
+prefix=/path/to/dlib
+# Path to where libraries are
+libdir=${prefix}/lib
+# Path to where include files are
 includedir=${prefix}/include
 
 Name: dlib
