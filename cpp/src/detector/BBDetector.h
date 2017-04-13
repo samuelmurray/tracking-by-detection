@@ -19,8 +19,6 @@
 
 class BBDetector : public Detector {
 public:
-    BBDetector();
-
     BBDetector(const std::string &modelFile,
                const std::string &weightsFile,
                const std::string &meanFile,

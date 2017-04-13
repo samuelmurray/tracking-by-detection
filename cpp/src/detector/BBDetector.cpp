@@ -9,11 +9,6 @@ using namespace caffe;
 
 // Constructors
 
-BBDetector::BBDetector()
-        : BBDetector("../models/okutama/human-detection/deploy.prototxt",
-                     "../models/okutama/human-detection/VGG_okutama_SSD_512x512_iter_20000.caffemodel",
-                     "", "104,117,123") {}
-
 BBDetector::BBDetector(const std::string &modelFile,
                        const std::string &weightsFile,
                        const std::string &meanFile,
