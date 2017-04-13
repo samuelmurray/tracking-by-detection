@@ -7,7 +7,9 @@
 #include <opencv2/core/mat.hpp>
 
 #ifdef USE_CAFFE
+
 #include <caffe/caffe.hpp>
+
 #endif //USE_CAFFE
 
 #include <string>

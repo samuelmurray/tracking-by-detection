@@ -43,7 +43,7 @@ BBDetector::BBDetector(const std::string &modelFile,
 std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
     Blob<float> *inputLayer = net->input_blobs()[0];
     inputLayer->Reshape(1, numChannels,
-                         inputGeometry.height, inputGeometry.width);
+                        inputGeometry.height, inputGeometry.width);
     /* Forward dimension change to all layers. */
     net->Reshape();
 
@@ -210,7 +210,7 @@ void BBDetector::preprocess(const cv::Mat &image,
 #include <stdexcept>
 #include <iostream>
 BBDetector::BBDetector() {
-        std::cerr << "Use of BBDetector requires Caffe; compile with USE_CAFFE.";
+        std::cerr << "Use of BBDetector requires Caffe; compile with USE_CAFFE.\n";
         throw std::runtime_error("Use of BBDetector requires Caffe; compile with USE_CAFFE.");
     }
 

@@ -1,6 +1,7 @@
 #include "../VideoTracker.h"
 #include "../detector/RandomDetector.h"
 #include "../tracker/mcsort/MCSORT.h"
+#include "../detector/BBDetector.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -18,11 +19,12 @@
 
 const char *USAGE_MESSAGE = "Usage: %s [-s sequencePath] [-f configFile]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
+const char *OPEN_DIR_MESSAGE = "Could not open directory %s\n";
 
 std::chrono::duration<double, std::milli> track(const boost::filesystem::path &inputDir,
                                                 const boost::filesystem::path &outputPath) {
     if (!boost::filesystem::is_directory(inputDir)) {
-        fprintf(stderr, "TODO: ERROR MESSAGE");
+        fprintf(stderr, OPEN_DIR_MESSAGE, inputDir.c_str());
         exit(EXIT_FAILURE);
     }
     std::ofstream outputStream;
@@ -43,8 +45,9 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
         auto startTime = std::chrono::high_resolution_clock::now();
         trackings = tracker.track(image);
         auto endTime = std::chrono::high_resolution_clock::now();
-        
-        cumulativeDuration += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(endTime - startTime);
+
+        cumulativeDuration += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(
+                endTime - startTime);
 
         for (auto it = trackings.begin(); it != trackings.end(); ++it) {
             outputStream << frameCount << ","
