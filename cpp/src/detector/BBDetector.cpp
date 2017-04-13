@@ -40,7 +40,7 @@ BBDetector::BBDetector(const std::string &modelFile,
 
 // Methods
 
-std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
+std::vector<Detection> BBDetector::detect(const cv::Mat &image, double confidenceThreshold) {
     Blob<float> *inputLayer = net->input_blobs()[0];
     inputLayer->Reshape(1, numChannels,
                         inputGeometry.height, inputGeometry.width);
@@ -60,7 +60,7 @@ std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
     const int numDet = resultBlob->height();
     std::vector<Detection> detections;
     for (int k = 0; k < numDet; ++k) {
-        if (result[0] == -1 || result[2] < 0.1) {
+        if (result[0] == -1 || result[2] < confidenceThreshold) {
             // Skip invalid detection.
             result += 7;
             continue;
@@ -218,7 +218,7 @@ BBDetector::BBDetector(const std::string &model_file,
                const std::string &weights_file,
                const std::string &mean_file,
                const std::string &mean_value) : BBDetector() {}
-std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
+std::vector<Detection> BBDetector::detect(const cv::Mat &image, double confidenceThreshold) {
     throw std::runtime_error("Use of BBDetector requires Caffe; compile with USE_CAFFE.");
 }
 

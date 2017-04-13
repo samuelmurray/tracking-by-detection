@@ -2,7 +2,7 @@
 
 // Methods
 
-std::vector<Detection> RandomDetector::detect(const cv::Mat &image) {
+std::vector<Detection> RandomDetector::detect(const cv::Mat &image, double confidenceThreshold) {
     std::vector<Detection> detections;
     detections.push_back(Detection("test_class",
                                    BoundingBox(0.1 * image.cols + rand() % 10 - 5,

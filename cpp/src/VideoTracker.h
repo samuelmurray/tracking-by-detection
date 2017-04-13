@@ -20,6 +20,7 @@ public:
 private:
     std::shared_ptr<Detector> detector;
     std::shared_ptr<Tracker> tracker;
+    double confidenceThreshold = 0.4;
 };
 
 

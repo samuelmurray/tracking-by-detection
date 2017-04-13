@@ -27,7 +27,7 @@ public:
      * Detects objects in a given image.
      * Returns the Detections.
      */
-    virtual std::vector<Detection> detect(const cv::Mat &image) = 0;
+    virtual std::vector<Detection> detect(const cv::Mat &image, double confidenceThreshold) = 0;
 };
 
 
