@@ -6,8 +6,9 @@
 
 #include "Detector.h"
 
-#include <caffe/caffe.hpp>
 #include <opencv2/core/mat.hpp>
+
+#include <caffe/caffe.hpp>
 
 #include <string>
 #include <memory>
@@ -16,24 +17,36 @@ class BBDetector : public Detector {
 public:
     BBDetector();
 
-    BBDetector(const std::string &model_file,
-               const std::string &weights_file,
-               const std::string &mean_file,
-               const std::string &mean_value);
+    BBDetector(const std::string &modelFile,
+               const std::string &weightsFile,
+               const std::string &meanFile,
+               const std::string &meanValue);
 
     std::vector<Detection> detect(const cv::Mat &image) override;
 
 private:
-    void setMean(const std::string &mean_file, const std::string &mean_value);
+    void setMean(const std::string &meanFile, const std::string &meanValue);
 
-    void wrapInputLayer(std::vector<cv::Mat> *input_channels);
+    void wrapInputLayer(std::vector<cv::Mat> *inputChannels);
 
-    void preprocess(const cv::Mat &img, std::vector<cv::Mat> *input_channels);
+    void preprocess(const cv::Mat &image, std::vector<cv::Mat> *inputChannels);
 
-    std::shared_ptr<caffe::Net<float>> net_;
-    cv::Size input_geometry_;
-    int num_channels_;
-    cv::Mat mean_;
+    std::shared_ptr<caffe::Net<float>> net;
+    cv::Size inputGeometry;
+    int numChannels;
+    cv::Mat mean;
+};
+#else
+class BBDetector : public Detector {
+public:
+    BBDetector() = 0;
+
+    BBDetector(const std::string &model_file,
+               const std::string &weights_file,
+               const std::string &mean_file,
+               const std::string &mean_value) = 0;
+
+    std::vector<Detection> detect(const cv::Mat &image) override = 0;
 };
 
 #endif  //USE_CAFFE
