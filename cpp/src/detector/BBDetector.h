@@ -2,16 +2,18 @@
 #define CPP_BBDETECTOR_H
 
 
-#ifdef USE_CAFFE
-
 #include "Detector.h"
 
 #include <opencv2/core/mat.hpp>
 
+#ifdef USE_CAFFE
 #include <caffe/caffe.hpp>
+#endif //USE_CAFFE
 
 #include <string>
 #include <memory>
+
+#ifdef USE_CAFFE
 
 class BBDetector : public Detector {
 public:
@@ -36,17 +38,19 @@ private:
     int numChannels;
     cv::Mat mean;
 };
-#else
+
+#else // USE_CAFFE
+
 class BBDetector : public Detector {
 public:
-    BBDetector() = 0;
+    BBDetector();
 
     BBDetector(const std::string &model_file,
                const std::string &weights_file,
                const std::string &mean_file,
-               const std::string &mean_value) = 0;
+               const std::string &mean_value);
 
-    std::vector<Detection> detect(const cv::Mat &image) override = 0;
+    std::vector<Detection> detect(const cv::Mat &image) override;
 };
 
 #endif  //USE_CAFFE

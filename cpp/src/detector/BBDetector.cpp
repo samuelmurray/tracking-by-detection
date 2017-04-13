@@ -205,4 +205,21 @@ void BBDetector::preprocess(const cv::Mat &image,
     */
 }
 
+#else //USE_CAFFE
+
+#include <stdexcept>
+#include <iostream>
+BBDetector::BBDetector() {
+        std::cerr << "Use of BBDetector requires Caffe; compile with USE_CAFFE.";
+        throw std::runtime_error("Use of BBDetector requires Caffe; compile with USE_CAFFE.");
+    }
+
+BBDetector::BBDetector(const std::string &model_file,
+               const std::string &weights_file,
+               const std::string &mean_file,
+               const std::string &mean_value) : BBDetector() {}
+std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
+    throw std::runtime_error("Use of BBDetector requires Caffe; compile with USE_CAFFE.");
+}
+
 #endif //USE_CAFFE
