@@ -33,15 +33,15 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
         fprintf(stderr, OPEN_FILE_MESSAGE, outputPath.c_str());
         exit(EXIT_FAILURE);
     }
-	#ifdef USE_CAFFE
+#ifdef USE_CAFFE
     VideoTracker tracker(std::make_shared<BBDetector>(
-        "../models/okutama/human-detection/deploy.prototxt",
-        "../models/okutama/human-detection/VGG_okutama_SSD_512x512_iter_20000.caffemodel",
-        "", "104,117,123"), 
-        std::make_shared<MCSORT>());
-	#else
-	VideoTracker tracker(std::make_shared<RandomDetector>(), std::make_shared<MCSORT>());
-	#endif
+            "../models/okutama/human-detection/deploy.prototxt",
+            "../models/okutama/human-detection/VGG_okutama_SSD_512x512_iter_20000.caffemodel",
+            "", "104,117,123"),
+                         std::make_shared<MCSORT>());
+#else //USE_CAFFE
+    VideoTracker tracker(std::make_shared<RandomDetector>(), std::make_shared<MCSORT>());
+#endif //USE_CAFFE
     std::vector<Tracking> trackings;
     std::chrono::duration<double, std::milli> cumulativeDuration = std::chrono::milliseconds::zero();
     int frameCount = 0;
