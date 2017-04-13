@@ -39,8 +39,15 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
     std::chrono::duration<double, std::milli> cumulativeDuration = std::chrono::milliseconds::zero();
     int frameCount = 0;
     cv::Mat image;
-    for (auto &entry : boost::make_iterator_range(boost::filesystem::directory_iterator(inputDir), {})) {
-        image = cv::imread(entry.path().string(), 1);
+    std::vector<boost::filesystem::path> imagePaths;
+    std::copy(boost::filesystem::directory_iterator(inputDir),
+              boost::filesystem::directory_iterator(),
+              std::back_inserter(imagePaths));
+    std::sort(imagePaths.begin(), imagePaths.end());
+
+    for (auto imageIt = imagePaths.begin(); imageIt != imagePaths.end(); ++imageIt) {
+        std::cout << imageIt->string() << std::endl;
+        image = cv::imread(imageIt->string(), 1);
 
         auto startTime = std::chrono::high_resolution_clock::now();
         trackings = tracker.track(image);
@@ -49,13 +56,13 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
         cumulativeDuration += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(
                 endTime - startTime);
 
-        for (auto it = trackings.begin(); it != trackings.end(); ++it) {
+        for (auto trackingIt = trackings.begin(); trackingIt != trackings.end(); ++trackingIt) {
             outputStream << frameCount << ","
-                         << it->ID << ","
-                         << it->bb.x1() << ","
-                         << it->bb.y1() << ","
-                         << it->bb.width << ","
-                         << it->bb.height << ","
+                         << trackingIt->ID << ","
+                         << trackingIt->bb.x1() << ","
+                         << trackingIt->bb.y1() << ","
+                         << trackingIt->bb.width << ","
+                         << trackingIt->bb.height << ","
                          << "1,-1,-1,-1\n";
         }
         ++frameCount;
