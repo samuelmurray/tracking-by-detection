@@ -2,7 +2,7 @@ SHELL = /bin/sh
 
 export PKG_CONFIG_PATH := ./config:$(PKG_CONFIG_PATH)
 
-REQUIREMENTS := opencv dlib-1 openblas boost caffe cuda
+REQUIREMENTS := opencv dlib-1 boost caffe cuda
 
 .PHONY: start test
 
