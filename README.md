@@ -58,7 +58,6 @@ The following directories should be present in root:
 * `cpp` - All source code.
 * `data` - Data sets and `config_file.txt` for running the demos. The file structure of MOTChallenge is assumed for the data sets.
 * `models` - Caffe models.
-* `python` - Extra Python code. Not needed for main project.
 
 #### pkg-config
 Make sure `PKG_CONFIG_PATH` includes the paths to the `.pc` files for all dependencies. Alternatively, copy and modify the `.pc.example` files in `config/`. Test if `pkg-config` can find `.pc` files for all dependencies, including custom ones in `config/`:
