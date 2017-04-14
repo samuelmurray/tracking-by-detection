@@ -2,9 +2,9 @@ from __future__ import print_function
 
 import numpy as np
 
-SEQUENCE = "seq-2_2_1"
-PATH_TO_DETECTIONS_FILE = f"../data/results/okutama/img1/{SEQUENCE}.txt"
-PATH_TO_IMAGES = f"../data/okutama/{SEQUENCE}/img1/"
+SEQUENCE = "2_2_1"
+PATH_TO_DETECTIONS_FILE = "../data/results/okutama/img1/{}.txt".format(SEQUENCE)
+PATH_TO_IMAGES = "../data/okutama/{}/img1/".format(SEQUENCE)
 PATH_TO_OUTPUT = "../data/results/okutama/trackings/"
 
 
