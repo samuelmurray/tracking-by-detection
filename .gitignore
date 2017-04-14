@@ -1,8 +1,8 @@
 #### Project specific ####
-data/
-models/
-config/
-external/
+data/*
+models/*
+config/*
+external/*
 !*.example
 
 # Python
