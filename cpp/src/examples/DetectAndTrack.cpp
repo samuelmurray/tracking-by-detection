@@ -1,7 +1,7 @@
-#include "../VideoTracker.h"
+#include "../ImageTracker.h"
 #include "../detector/RandomDetector.h"
-#include "../tracker/mcsort/MCSORT.h"
 #include "../detector/BBDetector.h"
+#include "../tracker/mcsort/MCSORT.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -17,12 +17,13 @@
 #include <chrono>
 #include <memory>
 
-const char *USAGE_MESSAGE = "Usage: %s [-s sequencePath] [-f configFile]\n";
+const char *USAGE_MESSAGE = "Usage: %s [-d dataConfigFile] [-m modelConfigFile]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 const char *OPEN_DIR_MESSAGE = "Could not open directory %s\n";
 
-std::chrono::duration<double, std::milli> track(const boost::filesystem::path &inputDir,
-                                                const boost::filesystem::path &outputPath) {
+std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const std::shared_ptr<Detector> &detector,
+                                                                         const boost::filesystem::path &inputDir,
+                                                                         const boost::filesystem::path &outputPath) {
     if (!boost::filesystem::is_directory(inputDir)) {
         fprintf(stderr, OPEN_DIR_MESSAGE, inputDir.c_str());
         exit(EXIT_FAILURE);
@@ -33,15 +34,8 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
         fprintf(stderr, OPEN_FILE_MESSAGE, outputPath.c_str());
         exit(EXIT_FAILURE);
     }
-#ifdef USE_CAFFE
-    VideoTracker tracker(std::make_shared<BBDetector>(
-            "../models/okutama/action-detection/deploy.prototxt",
-            "../models/okutama/action-detection/VGG_okutama_action_SSD_960x540_iter_12000.caffemodel",
-            "104,117,123"),
-                         std::make_shared<MCSORT>());
-#else //USE_CAFFE
-    VideoTracker tracker(std::make_shared<RandomDetector>(), std::make_shared<MCSORT>());
-#endif //USE_CAFFE
+
+    ImageTracker tracker(detector, std::make_shared<MCSORT>());
     std::vector<Tracking> trackings;
     std::chrono::duration<double, std::milli> cumulativeDuration = std::chrono::milliseconds::zero();
     int frameCount = 0;
@@ -57,7 +51,7 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
         image = cv::imread(imageIt->string(), 1);
 
         auto startTime = std::chrono::high_resolution_clock::now();
-        trackings = tracker.track(image);
+        trackings = tracker.detectAndTrack(image);
         auto endTime = std::chrono::high_resolution_clock::now();
 
         cumulativeDuration += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(
@@ -76,75 +70,98 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
         ++frameCount;
     }
     outputStream.close();
-    return cumulativeDuration;
+    return std::pair<std::chrono::duration<double, std::milli>, int>(cumulativeDuration, frameCount);
 }
 
-std::chrono::duration<double, std::milli> track(const boost::filesystem::path &datasetsDir,
-                                                const boost::filesystem::path &resultsDir,
-                                                const std::string &sequenceName) {
-    boost::filesystem::path inputDir = datasetsDir / sequenceName;
-    boost::filesystem::path outputDir = resultsDir;
-    inputDir /= "img1";
-    outputDir /= "img1";
-    if (!boost::filesystem::is_directory(outputDir)) {
-        boost::filesystem::create_directories(outputDir);
-    }
-    boost::filesystem::path outputPath = outputDir / (sequenceName + ".txt");
-    return track(inputDir, outputPath);
-}
+#ifdef USE_CAFFE
 
 int main(int argc, char **argv) {
-    const boost::filesystem::path dataDir = boost::filesystem::current_path().parent_path() / "data";
+    const boost::filesystem::path dataDirPath = boost::filesystem::current_path().parent_path() / "data";
+    const boost::filesystem::path modelDirPath = boost::filesystem::current_path().parent_path() / "models";
     int opt;
-    std::string sequenceName;
-    std::string configFileName;
-    while ((opt = getopt(argc, argv, "s:f:")) != -1) {
+
+    std::string dataConfigFileName;
+    std::string modelConfigFileName;
+    std::string modelType;
+    std::shared_ptr<Detector> detector;
+
+    while ((opt = getopt(argc, argv, "d:m:")) != -1) {
         switch (opt) {
-            case 's':
-                sequenceName = optarg;
+            case 'd':
+                dataConfigFileName = optarg;
                 break;
-            case 'f':
-                configFileName = optarg;
+            case 'm':
+                modelConfigFileName = optarg;
                 break;
             default:
                 fprintf(stderr, USAGE_MESSAGE, argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
-    if (sequenceName != "" && configFileName != "") {
-        fprintf(stderr, "You can't specify both -s and -f\n");
-    } else if (sequenceName != "") {
-        track(sequenceName, boost::filesystem::current_path() / "result.txt");
-        exit(EXIT_SUCCESS);
-    } else if (configFileName != "") {
-        boost::filesystem::path configFilePath = dataDir / configFileName;
-        std::ifstream configFile(configFilePath.string());
-        if (configFile.is_open()) {
-            std::string line;
-            std::getline(configFile, line);
-            boost::filesystem::path sequencesDir = dataDir / line;
-            std::getline(configFile, line);
-            boost::filesystem::path resultsDir = dataDir / line;
-
-            std::chrono::duration<double, std::milli> duration;
-            std::chrono::duration<double, std::milli> cumulativeDuration;
-            while (std::getline(configFile, sequenceName)) {
-                std::cout << "Sequence: " << sequenceName << std::endl;
-                duration = track(sequencesDir, resultsDir, sequenceName);
-                std::cout << "Duration: "
-                          << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()
-                          << "ms\n";
-                cumulativeDuration += duration;
-            }
-            configFile.close();
-            std::cout << "Total duration: "
-                      << std::chrono::duration_cast<std::chrono::milliseconds>(cumulativeDuration).count()
-                      << "ms\n";
-            exit(EXIT_SUCCESS);
-        }
-        fprintf(stderr, OPEN_FILE_MESSAGE, configFileName.c_str());
+    if (dataConfigFileName == "" || modelConfigFileName == "") {
+        fprintf(stderr, USAGE_MESSAGE, argv[0]);
+        exit(EXIT_FAILURE);
     }
 
-    fprintf(stderr, USAGE_MESSAGE, argv[0]);
+    boost::filesystem::path modelConfigFilePath = modelDirPath / "config" / modelConfigFileName;
+    std::ifstream modelConfigFile(modelConfigFilePath.string());
+    if (modelConfigFile.is_open()) {
+        std::string modelFile;
+        std::string weightsFile;
+        std::string meanValues;
+        std::getline(modelConfigFile, modelType);
+        std::getline(modelConfigFile, modelFile);
+        std::getline(modelConfigFile, weightsFile);
+        std::getline(modelConfigFile, meanValues);
+        boost::filesystem::path modelFilePath = modelDirPath / modelFile;
+        boost::filesystem::path weightsFilePath = modelDirPath / weightsFile;
+        detector = std::make_shared<BBDetector>(modelFilePath.string(), weightsFilePath.string(), meanValues);
+    } else {
+        fprintf(stderr, OPEN_FILE_MESSAGE, modelConfigFilePath.c_str());
+        exit(EXIT_FAILURE);
+    }
+
+    boost::filesystem::path dataConfigFilePath = dataDirPath / "config" / dataConfigFileName;
+    std::ifstream dataConfigFile(dataConfigFilePath.string());
+    if (dataConfigFile.is_open()) {
+        std::string datasetRelPath;
+        std::getline(dataConfigFile, datasetRelPath);
+        boost::filesystem::path datasetPath = dataDirPath / datasetRelPath;
+
+        std::string sequence;
+        boost::filesystem::path sequenceImagesDirPath;
+        boost::filesystem::path outputDirPath;
+        boost::filesystem::path outputPath;
+        std::pair<std::chrono::duration<double, std::milli>, int> durationFrameCount;
+        std::chrono::duration<double, std::milli> cumulativeDuration;
+        while (std::getline(dataConfigFile, sequence)) {
+            std::cout << "Sequence: " << sequence << std::endl;
+            sequenceImagesDirPath = datasetPath / sequence / "images";
+            outputDirPath = dataDirPath / "results" / datasetRelPath / sequence / modelType;
+            if (!boost::filesystem::is_directory(outputDirPath)) {
+                boost::filesystem::create_directories(outputDirPath);
+            }
+            outputPath = outputDirPath / "track.txt";
+
+            durationFrameCount = detectAndTrack(detector, sequenceImagesDirPath, outputPath);
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(durationFrameCount.first).count();
+            std::cout << "Duration: " << duration << "ms (" << double(durationFrameCount.second) / duration << "fps)\n";
+            cumulativeDuration += durationFrameCount.first;
+        }
+        dataConfigFile.close();
+        std::cout << "Total duration: "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(cumulativeDuration).count()
+                  << "ms\n";
+    } else {
+        fprintf(stderr, OPEN_FILE_MESSAGE, dataConfigFileName.c_str());
+        exit(EXIT_FAILURE);
+    }
+    exit(EXIT_SUCCESS);
+}
+
+#else //USE_CAFFE
+int main(int argc, char** argv) {
+    std::cerr << "This example requires Caffe; compile with USE_CAFFE.\n";
     exit(EXIT_FAILURE);
 }
+#endif //USE_CAFFE

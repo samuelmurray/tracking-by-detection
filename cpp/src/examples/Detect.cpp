@@ -15,13 +15,13 @@
 #include <chrono>
 #include <memory>
 
-const char *USAGE_MESSAGE = "Usage: %s [-d dataConfig] [-m modelConfig]\n";
+const char *USAGE_MESSAGE = "Usage: %s [-d dataConfigFile] [-m modelConfigFile]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 const char *OPEN_DIR_MESSAGE = "Could not open directory %s\n";
 
-std::chrono::duration<double, std::milli> detectAndSave(const std::shared_ptr<Detector> &detector,
-                                                        const boost::filesystem::path &inputDirPath,
-                                                        const boost::filesystem::path &outputPath) {
+std::pair<std::chrono::duration<double, std::milli>, int> detect(const std::shared_ptr<Detector> &detector,
+                                                                 const boost::filesystem::path &inputDirPath,
+                                                                 const boost::filesystem::path &outputPath) {
     if (!boost::filesystem::is_directory(inputDirPath)) {
         fprintf(stderr, OPEN_DIR_MESSAGE, inputDirPath.c_str());
         exit(EXIT_FAILURE);
@@ -68,8 +68,10 @@ std::chrono::duration<double, std::milli> detectAndSave(const std::shared_ptr<De
         ++frameCount;
     }
     outputStream.close();
-    return cumulativeDuration;
+    return std::pair<std::chrono::duration<double, std::milli>, int>(cumulativeDuration, frameCount);
 }
+
+#ifdef USE_CAFFE
 
 int main(int argc, char **argv) {
     const boost::filesystem::path dataDirPath = boost::filesystem::current_path().parent_path() / "data";
@@ -111,11 +113,7 @@ int main(int argc, char **argv) {
         std::getline(modelConfigFile, meanValues);
         boost::filesystem::path modelFilePath = modelDirPath / modelFile;
         boost::filesystem::path weightsFilePath = modelDirPath / weightsFile;
-#ifdef USE_CAFFE
         detector = std::make_shared<BBDetector>(modelFilePath.string(), weightsFilePath.string(), meanValues);
-#else //USE_CAFFE
-        detector = std::make_shared<RandomDetector>();
-#endif //USE_CAFFE
     } else {
         fprintf(stderr, OPEN_FILE_MESSAGE, modelConfigFilePath.c_str());
         exit(EXIT_FAILURE);
@@ -124,19 +122,18 @@ int main(int argc, char **argv) {
     boost::filesystem::path dataConfigFilePath = dataDirPath / "config" / dataConfigFileName;
     std::ifstream dataConfigFile(dataConfigFilePath.string());
     if (dataConfigFile.is_open()) {
-        std::string sequencesDir;
-        std::getline(dataConfigFile, sequencesDir);
-        boost::filesystem::path datasetPath = dataDirPath / sequencesDir;
+        std::string datasetRelPath;
+        std::getline(dataConfigFile, datasetRelPath);
+        boost::filesystem::path datasetPath = dataDirPath / datasetRelPath;
 
-        std::chrono::duration<double, std::milli> duration;
-        std::chrono::duration<double, std::milli> cumulativeDuration;
         std::string sequence;
         boost::filesystem::path sequenceImagesDirPath;
         boost::filesystem::path outputDirPath;
         boost::filesystem::path outputPath;
+        std::pair<std::chrono::duration<double, std::milli>, int> durationFrameCount;
+        std::chrono::duration<double, std::milli> cumulativeDuration;
         while (std::getline(dataConfigFile, sequence)) {
             std::cout << "Sequence: " << sequence << std::endl;
-
             sequenceImagesDirPath = datasetPath / sequence / "images";
             outputDirPath = datasetPath / sequence / modelType;
             if (!boost::filesystem::is_directory(outputDirPath)) {
@@ -144,12 +141,10 @@ int main(int argc, char **argv) {
             }
             outputPath = outputDirPath / "det.txt";
 
-            duration = detectAndSave(detector, sequenceImagesDirPath, outputPath);
-
-            std::cout << "Duration: "
-                      << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()
-                      << "ms\n";
-            cumulativeDuration += duration;
+            durationFrameCount = detect(detector, sequenceImagesDirPath, outputPath);
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(durationFrameCount.first).count();
+            std::cout << "Duration: " << duration << "ms (" << double(durationFrameCount.second) / duration << "fps)\n";
+            cumulativeDuration += durationFrameCount.first;
         }
         dataConfigFile.close();
         std::cout << "Total duration: "
@@ -161,3 +156,10 @@ int main(int argc, char **argv) {
     }
     exit(EXIT_SUCCESS);
 }
+
+#else //USE_CAFFE
+int main(int argc, char **argv) {
+    std::cerr << "This example requires Caffe; compile with USE_CAFFE.\n";
+    exit(EXIT_FAILURE);
+}
+#endif //USE_CAFFE

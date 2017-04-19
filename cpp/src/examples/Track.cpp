@@ -10,11 +10,11 @@
 #include <unistd.h>
 #include <chrono>
 
-const char *USAGE_MESSAGE = "Usage: %s [-g] [-s sequencePath] [-f configFile]\n";
+const char *USAGE_MESSAGE = "Usage: %s [-d configFile]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 
-std::chrono::duration<double, std::milli> track(const boost::filesystem::path &inputPath,
-                                                const boost::filesystem::path &outputPath) {
+std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::filesystem::path &inputPath,
+                                                                const boost::filesystem::path &outputPath) {
     std::ifstream inputStream(inputPath.string());
     if (!inputStream.is_open()) {
         fprintf(stderr, OPEN_FILE_MESSAGE, inputPath.c_str());
@@ -30,6 +30,7 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
     MCSORT tracker;
     std::vector<Tracking> trackings;
     std::chrono::duration<double, std::milli> cumulativeDuration = std::chrono::milliseconds::zero();
+    int frameCount = 0;
     for (const auto &detMap : DetectionFileParser::parseMOTFile(inputStream)) {
 
         auto startTime = std::chrono::high_resolution_clock::now();
@@ -48,87 +49,67 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
                          << it->bb.height << ","
                          << "1,-1,-1,-1\n";
         }
+        ++frameCount;
     }
     outputStream.close();
-    return cumulativeDuration;
-}
-
-std::chrono::duration<double, std::milli> track(const boost::filesystem::path &datasetsDir,
-                                                const boost::filesystem::path &resultsDir,
-                                                const std::string &sequenceName,
-                                                bool useGroundTruth) {
-    boost::filesystem::path inputPath = datasetsDir / sequenceName;
-    boost::filesystem::path outputDir = resultsDir;
-    if (useGroundTruth) {
-        inputPath /= "gt/gt.txt";
-        outputDir /= "gt";
-    } else {
-        inputPath /= "det/det.txt";
-        outputDir /= "det";
-    }
-    if (!boost::filesystem::is_directory(outputDir)) {
-        boost::filesystem::create_directories(outputDir);
-    }
-    boost::filesystem::path outputPath = outputDir / (sequenceName + ".txt");
-    return track(inputPath, outputPath);
+    return std::pair<std::chrono::duration<double, std::milli>, int>(cumulativeDuration, frameCount);
 }
 
 int main(int argc, char **argv) {
-    const boost::filesystem::path dataDir = boost::filesystem::current_path().parent_path() / "data";
-    bool useGroundTruth = false;
+    const boost::filesystem::path dataDirPath = boost::filesystem::current_path().parent_path() / "data";
     int opt;
-    std::string sequenceName;
-    std::string configFileName;
-    while ((opt = getopt(argc, argv, "gs:f:")) != -1) {
+
+    std::string dataConfigFileName;
+
+    while ((opt = getopt(argc, argv, "d:")) != -1) {
         switch (opt) {
-            case 'g':
-                useGroundTruth = true;
-                break;
-            case 's':
-                sequenceName = optarg;
-                break;
-            case 'f':
-                configFileName = optarg;
+            case 'd':
+                dataConfigFileName = optarg;
                 break;
             default:
                 fprintf(stderr, USAGE_MESSAGE, argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
-    if (sequenceName != "" && configFileName != "") {
-        fprintf(stderr, "You can't specify both -s and -f\n");
-    } else if (sequenceName != "") {
-        track(sequenceName, boost::filesystem::current_path() / "result.txt");
-        exit(EXIT_SUCCESS);
-    } else if (configFileName != "") {
-        boost::filesystem::path configFilePath = dataDir / configFileName;
-        std::ifstream configFile(configFilePath.string());
-        if (configFile.is_open()) {
-            std::string line;
-            getline(configFile, line);
-            boost::filesystem::path sequencesDir = dataDir / line;
-            getline(configFile, line);
-            boost::filesystem::path resultsDir = dataDir / line;
-
-            std::chrono::duration<double, std::milli> duration;
-            std::chrono::duration<double, std::milli> cumulativeDuration;
-            while (getline(configFile, sequenceName)) {
-                std::cout << "Sequence: " << sequenceName << std::endl;
-                duration = track(sequencesDir, resultsDir, sequenceName, useGroundTruth);
-                std::cout << "Duration: "
-                          << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()
-                          << "ms\n";
-                cumulativeDuration += duration;
-            }
-            configFile.close();
-            std::cout << "Total duration: "
-                      << std::chrono::duration_cast<std::chrono::milliseconds>(cumulativeDuration).count()
-                      << "ms\n";
-            exit(EXIT_SUCCESS);
-        }
-        fprintf(stderr, OPEN_FILE_MESSAGE, configFileName.c_str());
+    if (dataConfigFileName == "") {
+        fprintf(stderr, USAGE_MESSAGE, argv[0]);
+        exit(EXIT_FAILURE);
     }
 
-    fprintf(stderr, USAGE_MESSAGE, argv[0]);
-    exit(EXIT_FAILURE);
+    boost::filesystem::path dataConfigFilePath = dataDirPath / "config" / dataConfigFileName;
+    std::ifstream dataConfigFile(dataConfigFilePath.string());
+    if (dataConfigFile.is_open()) {
+        std::string datasetRelPath;
+        std::getline(dataConfigFile, datasetRelPath);
+        boost::filesystem::path datasetPath = dataDirPath / datasetRelPath;
+
+        std::string sequence;
+        boost::filesystem::path outputDirPath;
+        boost::filesystem::path inputPath;
+        boost::filesystem::path outputPath;
+        std::pair<std::chrono::duration<double, std::milli>, int> durationFrameCount;
+        std::chrono::duration<double, std::milli> cumulativeDuration;
+        while (getline(dataConfigFile, sequence)) {
+            std::cout << "Sequence: " << sequence << std::endl;
+            inputPath = datasetPath / sequence / "det/det.txt";
+            outputDirPath = dataDirPath / "results" / datasetRelPath / sequence / "TEMP";
+            if (!boost::filesystem::is_directory(outputDirPath)) {
+                boost::filesystem::create_directories(outputDirPath);
+            }
+            outputPath = outputDirPath / "track.txt";
+
+            durationFrameCount = track(inputPath, outputPath);
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(durationFrameCount.first).count();
+            std::cout << "Duration: " << duration << "ms (" << double(durationFrameCount.second * 1000) / duration << "fps)\n";
+            cumulativeDuration += durationFrameCount.first;
+        }
+        dataConfigFile.close();
+        std::cout << "Total duration: "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(cumulativeDuration).count()
+                  << "ms\n";
+    } else {
+        fprintf(stderr, OPEN_FILE_MESSAGE, dataConfigFileName.c_str());
+        exit(EXIT_FAILURE);
+    }
+    exit(EXIT_SUCCESS);
 }
