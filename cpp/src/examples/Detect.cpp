@@ -72,7 +72,7 @@ std::chrono::duration<double, std::milli> detectAndSave(const std::shared_ptr<De
 
 int main(int argc, char **argv) {
     const boost::filesystem::path dataDirPath = boost::filesystem::current_path().parent_path() / "data";
-    const boost::filesystem::path modelDirPath = boost::filesystem::current_path().parent_path() / "model";
+    const boost::filesystem::path modelDirPath = boost::filesystem::current_path().parent_path() / "models";
     int opt;
 
     std::string dataConfigFileName;
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
         detector = std::make_shared<RandomDetector>();
 #endif //USE_CAFFE
     } else {
-        fprintf(stderr, OPEN_FILE_MESSAGE, modelConfigFileName.c_str());
+        fprintf(stderr, OPEN_FILE_MESSAGE, modelConfigFilePath.c_str());
         exit(EXIT_FAILURE);
     }
 
