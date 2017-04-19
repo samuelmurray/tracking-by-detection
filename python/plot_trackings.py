@@ -6,10 +6,24 @@ SEQUENCE = "2_2_1"
 PATH_TO_DETECTIONS_FILE = "../data/results/okutama/img1/{}.txt".format(SEQUENCE)
 PATH_TO_IMAGES = "../data/okutama/{}/img1/".format(SEQUENCE)
 PATH_TO_OUTPUT = "../data/results/okutama/trackings/"
-
+CLASS_MAP = {
+            0 : "Background",
+            1 : "Walking",
+            2 : "Sitting",
+            3 : "Standing",
+            4 : "Running",
+            5 : "Lying",
+            6 : "Carrying",
+            7 : "Pushing/Pulling",
+            8 : "Reading",
+            9 : "Drinking",
+            10 : "Calling",
+            11 : "Hand Shaking",
+            12 : "Hugging"
+}
 
 def generate_and_save_PIL():
-  from PIL import Image, ImageDraw
+  from PIL import Image, ImageDraw, ImageFont
 
   detections = np.loadtxt(PATH_TO_DETECTIONS_FILE, delimiter=",")
   colours = np.random.randint(0, 255, (32, 3))
@@ -20,13 +34,15 @@ def generate_and_save_PIL():
     image = Image.open(image_path)
     draw = ImageDraw.Draw(image, 'RGBA')
 
-    dets = detections[detections[:,0]==frame, 1:6]
-    dets[:, 3:5] += dets[:, 1:3] # Convert from [x1, y1, width, height] to [x1, y1, x2, y2]
-
+    dets = detections[detections[:,0]==frame, 1:7]
+    dets[:, 4:6] += dets[:, 2:4] # Convert from [x1, y1, width, height] to [x1, y1, x2, y2]
+    if frame%10 == 0 :
+      print(frame)
     for d in dets:
       d = d.astype(np.uint32)
       c = tuple(colours[d[0]%32, :])
-      draw.rectangle([d[1], d[2], d[3], d[4]], fill=(c + (100,)), outline=c)
+      draw.rectangle([d[2], d[3], d[4], d[5]], fill=(c + (100,)), outline=c)
+      draw.text((d[2], d[3] + 5), CLASS_MAP[d[1]], fill=(255,255,255))
     image.save(PATH_TO_OUTPUT + file_name)
 
 
