@@ -25,12 +25,12 @@ std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
         predictors.at(match.second).update(detections.at(match.first));
     }
 
-    for (const auto &p : association.unmatchedPredictors) {
+    for (const auto p : association.unmatchedPredictors) {
         predictors.at(p).update();
     }
 
     // Create and initialise new predictors for unmatched detections
-    for (const auto &id : association.unmatchedDetections) {
+    for (const auto id : association.unmatchedDetections) {
         KalmanPredictor predictor(detections.at(id), ++perLabelCount[detections.at(id).label]);
         predictors.push_back(std::move(predictor));
     }
