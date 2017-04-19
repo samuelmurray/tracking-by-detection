@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
         boost::filesystem::path modelFilePath = modelDirPath / modelFile;
         boost::filesystem::path weightsFilePath = modelDirPath / weightsFile;
 #ifdef USE_CAFFE
-        detector = std::make_shared<BBDetector>(modelFilePath, weightsFile, meanValues);
+        detector = std::make_shared<BBDetector>(modelFilePath.string(), weightsFilePath.string(), meanValues);
 #else //USE_CAFFE
         detector = std::make_shared<RandomDetector>();
 #endif //USE_CAFFE
