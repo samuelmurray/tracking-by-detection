@@ -46,19 +46,20 @@ OBJECTS := $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
 DEPFILES := $(patsubst $(SOURCEDIR)/%.cpp,$(DEPDIR)/%.d,$(SOURCES))
 TARGET_detect := detectApp.out
 TARGET_track := trackApp.out
-TARGETS := $(TARGET_detect) $(TARGET_track)
+TARGET_detectAndTrack := detectAndTrackApp.out
+TARGETS := $(TARGET_detect) $(TARGET_track) $(TARGET_detectAndTrack) 
 
-# For running DetectAndTrack.cpp
-#detect: OBJECTS := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
-#detect: OBJECTS += $(BUILDDIR)/$(MAINDIR)/DetectAndTrack.o
+# For running Detect.cpp
 OBJECTS_detect := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
-OBJECTS_detect += $(BUILDDIR)/$(MAINDIR)/DetectAndTrack.o
+OBJECTS_detect += $(BUILDDIR)/$(MAINDIR)/Detect.o
 
 # For running Track.cpp
-#track: OBJECTS := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
-#track: OBJECTS += $(BUILDDIR)/$(MAINDIR)/Track.o
 OBJECTS_track := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
 OBJECTS_track += $(BUILDDIR)/$(MAINDIR)/Track.o
+
+# For running DetectAndTrack.cpp
+OBJECTS_detectAndTrack := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
+OBJECTS_detectAndTrack += $(BUILDDIR)/$(MAINDIR)/DetectAndTrack.o
 
 # Build instructioncs
 MKDIRIFNOTEXIST = @test -d $(@D) || mkdir -p $(@D)
@@ -79,7 +80,7 @@ print-% : ; @echo $* = $($*)
 run-% : % ; ./$(TARGET_$*) -f test.txt
 
 # Compile and link target
-detect track: compile $$(TARGET_$$@)
+detect track detectAndTrack: compile $$(TARGET_$$@)
 
 # Link target's objects
 %App.out: $$(OBJECTS_%)
