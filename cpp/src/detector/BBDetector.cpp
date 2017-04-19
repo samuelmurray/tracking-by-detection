@@ -26,8 +26,7 @@ BBDetector::BBDetector(const std::string &modelFile, const std::string &weightsF
     //        << "Input layer should have 1 or 3 channels.";
     inputGeometry = cv::Size(inputLayer->width(), inputLayer->height());
 
-    /* Load the binaryproto mean file. */
-    setMean(<#initializer#>);
+    setMean(meanValue);
 }
 
 // Methods
@@ -73,8 +72,6 @@ std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
     return detections;
 }
 
-
-/* Load the mean file in binaryproto format. */
 void BBDetector::setMean(const std::string &meanValue) {
     cv::Scalar channelMean;
     std::stringstream ss(meanValue);
@@ -100,11 +97,6 @@ void BBDetector::setMean(const std::string &meanValue) {
 
 }
 
-/* Wrap the input layer of the network in separate cv::Mat objects
- * (one per channel). This way we save one memcpy operation and we
- * don't need to rely on cudaMemcpy2D. The last preprocessing
- * operation will write the separate channels directly to the input
- * layer. */
 void BBDetector::wrapInputLayer(std::vector<cv::Mat> *inputChannels) {
     Blob<float> *inputLayer = net->input_blobs()[0];
 
