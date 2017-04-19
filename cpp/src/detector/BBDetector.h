@@ -42,9 +42,7 @@ class BBDetector : public Detector {
 public:
     BBDetector();
 
-    BBDetector(const std::string &model_file,
-               const std::string &weights_file,
-               const std::string &mean_value);
+    BBDetector(const std::string &model_file, const std::string &weights_file, const std::string &mean_value);
 
     std::vector<Detection> detect(const cv::Mat &image) override;
 };

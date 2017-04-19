@@ -37,7 +37,7 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
     VideoTracker tracker(std::make_shared<BBDetector>(
             "../models/okutama/action-detection/deploy.prototxt",
             "../models/okutama/action-detection/VGG_okutama_action_SSD_960x540_iter_12000.caffemodel",
-            "", "104,117,123"),
+            "104,117,123"),
                          std::make_shared<MCSORT>());
 #else //USE_CAFFE
     VideoTracker tracker(std::make_shared<RandomDetector>(), std::make_shared<MCSORT>());
