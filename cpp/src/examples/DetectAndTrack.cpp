@@ -35,8 +35,8 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
     }
 #ifdef USE_CAFFE
     VideoTracker tracker(std::make_shared<BBDetector>(
-            "../models/okutama/human-detection/deploy.prototxt",
-            "../models/okutama/human-detection/VGG_okutama_SSD_512x512_iter_20000.caffemodel",
+            "../models/okutama/action-detection/deploy.prototxt",
+            "../models/okutama/human-detection/VGG_okutama_action_SSD_960x540_iter_12000.caffemodel",
             "", "104,117,123"),
                          std::make_shared<MCSORT>());
 #else //USE_CAFFE
@@ -65,6 +65,7 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
 
         for (auto trackingIt = trackings.begin(); trackingIt != trackings.end(); ++trackingIt) {
             outputStream << frameCount << ","
+                         << trackingIt->className << ","
                          << trackingIt->ID << ","
                          << trackingIt->bb.x1() << ","
                          << trackingIt->bb.y1() << ","
