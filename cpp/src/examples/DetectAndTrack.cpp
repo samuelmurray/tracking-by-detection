@@ -65,7 +65,7 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
 
         for (auto trackingIt = trackings.begin(); trackingIt != trackings.end(); ++trackingIt) {
             outputStream << frameCount << ","
-                         << trackingIt->className << ","
+                         << trackingIt->label << ","
                          << trackingIt->ID << ","
                          << trackingIt->bb.x1() << ","
                          << trackingIt->bb.y1() << ","

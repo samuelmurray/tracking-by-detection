@@ -4,7 +4,7 @@
 
 KalmanPredictor::KalmanPredictor(const Detection &initialState, int ID)
         : filter(nullptr),
-          className(initialState.className),
+          label(initialState.label),
           ID(ID),
           timeSinceUpdate(0),
           hitStreak(0) {
@@ -63,14 +63,15 @@ KalmanPredictor::KalmanPredictor(const Detection &initialState, int ID)
 
 KalmanPredictor::KalmanPredictor(KalmanPredictor &&rhs)
         : filter(std::move(rhs.filter)),
-          className(std::move(rhs.className)),
+          label(rhs.label),
           ID(rhs.ID),
           timeSinceUpdate(rhs.timeSinceUpdate),
           hitStreak(rhs.hitStreak) {}
 
+
 KalmanPredictor &KalmanPredictor::operator=(KalmanPredictor &&rhs) {
     filter = std::move(rhs.filter);
-    className = std::move(rhs.className);
+    label = rhs.label;
     ID = rhs.ID;
     timeSinceUpdate = rhs.timeSinceUpdate;
     hitStreak = rhs.hitStreak;
@@ -94,11 +95,11 @@ void KalmanPredictor::update(const Detection &det) {
 // Getters
 
 Detection KalmanPredictor::getPredictedNextDetection() const {
-    return Detection(className, stateToBoundingBox(filter->get_predicted_next_state()));
+    return Detection(label, stateToBoundingBox(filter->get_predicted_next_state()));
 }
 
 Tracking KalmanPredictor::getTracking() const {
-    return Tracking(className, ID, stateToBoundingBox(filter->get_current_state()));
+    return Tracking(label, ID, stateToBoundingBox(filter->get_current_state()));
 }
 
 int KalmanPredictor::getTimeSinceUpdate() const {

@@ -30,7 +30,7 @@ std::chrono::duration<double, std::milli> track(const boost::filesystem::path &i
     MCSORT tracker;
     std::vector<Tracking> trackings;
     std::chrono::duration<double, std::milli> cumulativeDuration = std::chrono::milliseconds::zero();
-    for (auto const &detMap : DetectionFileParser::parseMOTFile(inputStream)) {
+    for (const auto &detMap : DetectionFileParser::parseMOTFile(inputStream)) {
 
         auto startTime = std::chrono::high_resolution_clock::now();
         trackings = tracker.track(detMap.second);

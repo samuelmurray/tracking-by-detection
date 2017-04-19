@@ -7,7 +7,7 @@
 #include <ostream>
 
 struct Detection {
-    Detection(const std::string &className, const BoundingBox &bb);
+    Detection(int label, const BoundingBox &bb);
 
     Detection(const Detection &rhs);
 
@@ -18,7 +18,7 @@ struct Detection {
 
     Detection &operator=(Detection &&rhs) = delete;
 
-    const std::string className;
+    const int label;
     const BoundingBox bb;
 };
 

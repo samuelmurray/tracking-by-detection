@@ -68,7 +68,7 @@ public:
 
 private:
     std::shared_ptr<dlib::kalman_filter<numStates, numObservations>> filter;
-    std::string className;
+    int label;
     int ID;
     int timeSinceUpdate;
     int hitStreak;

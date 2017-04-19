@@ -25,7 +25,7 @@ private:
     const int maxAge;
     const int minHits;
     std::vector<KalmanPredictor> predictors;
-    std::map<std::string, int> classCount;
+    std::map<int, int> perLabelCount;
     int frameCount = 0;
 
     /**

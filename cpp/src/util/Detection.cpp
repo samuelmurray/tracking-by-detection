@@ -2,18 +2,18 @@
 
 // Constructors
 
-Detection::Detection(const std::string &className, const BoundingBox &bb)
-        : className(className), bb(bb) {}
+Detection::Detection(int label, const BoundingBox &bb)
+        : label(label), bb(bb) {}
 
 Detection::Detection(const Detection &rhs)
-        : className(rhs.className), bb(rhs.bb) {}
+        : label(rhs.label), bb(rhs.bb) {}
 
 Detection::Detection(Detection &&rhs)
-        : className(std::move(rhs.className)), bb(std::move(rhs.bb)) {}
+        : label(std::move(rhs.label)), bb(std::move(rhs.bb)) {}
 
 // Functions
 
 std::ostream &operator<<(std::ostream &os, const Detection &d) {
-    os << d.className << " " << d.bb;
+    os << "Label: " << d.label << " " << d.bb;
     return os;
 }

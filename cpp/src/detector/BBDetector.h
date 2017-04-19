@@ -34,9 +34,9 @@ private:
     void preprocess(const cv::Mat &image, std::vector<cv::Mat> *inputChannels);
 
     std::shared_ptr<caffe::Net<float>> net;
-    cv::Size inputGeometry;
-    int numChannels;
-    cv::Mat mean;
+    const cv::Size inputGeometry;
+    const int numChannels;
+    const cv::Mat mean;
 };
 
 #else // USE_CAFFE

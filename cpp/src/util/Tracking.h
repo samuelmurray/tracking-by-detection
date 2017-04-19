@@ -7,7 +7,7 @@
 #include <ostream>
 
 struct Tracking {
-    Tracking(const std::string &className, int ID, const BoundingBox &bb);
+    Tracking(int label, int ID, const BoundingBox &bb);
 
     Tracking(const Tracking &rhs);
 
@@ -18,7 +18,7 @@ struct Tracking {
 
     Tracking &operator=(Tracking &&rhs) = delete;
 
-    const std::string className;
+    const int label;
     const int ID;
     const BoundingBox bb;
 };

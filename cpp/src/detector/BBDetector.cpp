@@ -62,7 +62,7 @@ std::vector<Detection> BBDetector::detect(const cv::Mat &image, double confidenc
         }
         std::vector<float> det(result, result + 7);
 
-        Detection detection(std::to_string(det[1]),
+        Detection detection(int(det[1]),
                             BoundingBox((det[3] + det[5]) / 2 * image.cols,
                                         (det[4] + det[6]) / 2 * image.rows,
                                         (det[5] - det[3]) * image.cols,
