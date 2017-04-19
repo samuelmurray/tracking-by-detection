@@ -15,7 +15,7 @@
 #include <chrono>
 #include <memory>
 
-const char *USAGE_MESSAGE = "Usage: [-d dataConfig] [-m modelConfig]\n";
+const char *USAGE_MESSAGE = "Usage: %s [-d dataConfig] [-m modelConfig]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 const char *OPEN_DIR_MESSAGE = "Could not open directory %s\n";
 
