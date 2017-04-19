@@ -108,8 +108,10 @@ int main(int argc, char **argv) {
         std::getline(modelConfigFile, modelFile);
         std::getline(modelConfigFile, weightsFile);
         std::getline(modelConfigFile, meanValues);
+        boost::filesystem::path modelFilePath = modelDirPath / modelFile;
+        boost::filesystem::path weightsFilePath = modelDirPath / weightsFile;
 #ifdef USE_CAFFE
-        detector = std::make_shared<BBDetector>(modelFile, weightsFile, meanValues);
+        detector = std::make_shared<BBDetector>(modelFilePath, weightsFile, meanValues);
 #else //USE_CAFFE
         detector = std::make_shared<RandomDetector>();
 #endif //USE_CAFFE
