@@ -41,6 +41,7 @@ std::chrono::duration<double, std::milli> detectAndSave(const std::shared_ptr<De
     std::copy(boost::filesystem::directory_iterator(inputDirPath),
               boost::filesystem::directory_iterator(),
               std::back_inserter(imagePaths));
+    std::sort(imagePaths.begin(), imagePaths.end());
 
     for (auto imageIt = imagePaths.begin(); imageIt != imagePaths.end(); ++imageIt) {
         std::cout << imageIt->string() << std::endl;
