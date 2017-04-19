@@ -2,18 +2,18 @@
 
 // Constructors
 
-Tracking::Tracking(const std::string &className, int ID, const BoundingBox &bb)
-        : className(className), ID(ID), bb(bb) {}
+Tracking::Tracking(int label, int ID, const BoundingBox &bb)
+        : label(label), ID(ID), bb(bb) {}
 
 Tracking::Tracking(const Tracking &rhs)
-        : className(rhs.className), ID(rhs.ID), bb(rhs.bb) {}
+        : label(rhs.label), ID(rhs.ID), bb(rhs.bb) {}
 
 Tracking::Tracking(Tracking &&rhs)
-        : className(std::move(rhs.className)), ID(rhs.ID), bb(std::move(rhs.bb)) {}
+        : label(std::move(rhs.label)), ID(std::move(rhs.ID)), bb(std::move(rhs.bb)) {}
 
 // Functions
 
 std::ostream &operator<<(std::ostream &os, const Tracking &t) {
-    os << t.className << " ID: " << t.ID << " " << t.bb;
+    os << "Label: " << t.label << " ID: " << t.ID << " " << t.bb;
     return os;
 }

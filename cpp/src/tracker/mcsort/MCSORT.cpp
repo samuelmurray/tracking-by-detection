@@ -21,17 +21,17 @@ std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
     Association association = associateDetectionsToPredictors(detections, predictors, Affinity::iou);
 
     // Update matched predictors with assigned detections
-    for (auto match : association.matches) {
+    for (const auto &match : association.matches) {
         predictors.at(match.second).update(detections.at(match.first));
     }
 
-    for (auto p : association.unmatchedPredictors) {
+    for (const auto &p : association.unmatchedPredictors) {
         predictors.at(p).update();
     }
 
     // Create and initialise new predictors for unmatched detections
-    for (auto id : association.unmatchedDetections) {
-        KalmanPredictor predictor(detections.at(id), ++classCount[detections.at(id).className]);
+    for (const auto &id : association.unmatchedDetections) {
+        KalmanPredictor predictor(detections.at(id), ++perLabelCount[detections.at(id).label]);
         predictors.push_back(std::move(predictor));
     }
 
