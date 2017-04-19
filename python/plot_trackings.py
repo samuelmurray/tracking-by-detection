@@ -40,9 +40,9 @@ def generate_and_save_PIL():
       print(frame)
     for d in dets:
       d = d.astype(np.uint32)
-      c = tuple(colours[d[0]%32, :])
+      c = tuple(colours[d[1]%32, :])
       draw.rectangle([d[2], d[3], d[4], d[5]], fill=(c + (100,)), outline=c)
-      draw.text((d[2], d[3] + 5), CLASS_MAP[d[1]], fill=(255,255,255))
+      draw.text((d[2], d[3] + 5), CLASS_MAP[d[0]], fill=(255,255,255))
     image.save(PATH_TO_OUTPUT + file_name)
 
 
