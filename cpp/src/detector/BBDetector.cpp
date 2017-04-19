@@ -9,10 +9,7 @@ using namespace caffe;
 
 // Constructors
 
-BBDetector::BBDetector(const std::string &modelFile,
-                       const std::string &weightsFile,
-                       const std::string &meanFile,
-                       const std::string &meanValue)
+BBDetector::BBDetector(const std::string &modelFile, const std::string &weightsFile, const std::string &meanValue)
         : Detector() {
     Caffe::set_mode(Caffe::GPU);
 
@@ -30,7 +27,7 @@ BBDetector::BBDetector(const std::string &modelFile,
     inputGeometry = cv::Size(inputLayer->width(), inputLayer->height());
 
     /* Load the binaryproto mean file. */
-    setMean(meanFile, meanValue);
+    setMean(<#initializer#>);
 }
 
 // Methods
@@ -78,66 +75,29 @@ std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
 
 
 /* Load the mean file in binaryproto format. */
-void BBDetector::setMean(const std::string &meanFile, const std::string &meanValue) {
+void BBDetector::setMean(const std::string &meanValue) {
     cv::Scalar channelMean;
-    if (!meanFile.empty()) {
-
-        BlobProto blobProto;
-        ReadProtoFromBinaryFileOrDie(meanFile.c_str(), &blobProto);
-
-        /* Convert from BlobProto to Blob<float> */
-        Blob<float> meanBlob;
-        meanBlob.FromProto(blobProto);
-        /*
-        CHECK_EQ(meanBlob.channels(), numChannels)
-                << "Number of channels of mean file doesn't match input layer.";
-        */
-
-        /* The format of the mean file is planar 32-bit float BGR or grayscale. */
-        std::vector<cv::Mat> channels;
-        float *data = meanBlob.mutable_cpu_data();
-        for (int i = 0; i < numChannels; ++i) {
-            /* Extract an individual channel. */
-            cv::Mat channel(meanBlob.height(), meanBlob.width(), CV_32FC1, data);
-            channels.push_back(channel);
-            data += meanBlob.height() * meanBlob.width();
-        }
-
-        /* Merge the separate channels into a single image. */
-        cv::Mat mean;
-        cv::merge(channels, mean);
-
-        /* Compute the global mean pixel value and create a mean image
-         * filled with this value. */
-        channelMean = cv::mean(mean);
-        mean = cv::Mat(inputGeometry, mean.type(), channelMean);
+    std::stringstream ss(meanValue);
+    std::vector<double> values;
+    std::string item;
+    while (getline(ss, item, ',')) {
+        double value = std::atof(item.c_str());
+        values.push_back(value);
     }
-    if (!meanValue.empty()) {
-        /*
-        CHECK(meanFile.empty()) <<
-                                 "Cannot specify meanFile and meanValue at the same time";
-        */
-        std::stringstream ss(meanValue);
-        std::vector<double> values;
-        std::string item;
-        while (getline(ss, item, ',')) {
-            double value = std::atof(item.c_str());
-            values.push_back(value);
-        }
-        /*
-        CHECK(values.size() == 1 || values.size() == numChannels) <<
-                                                                    "Specify either 1 meanValue or as many as channels: "
-                                                                    << numChannels;
-        */
-        std::vector<cv::Mat> channels;
-        for (int i = 0; i < numChannels; ++i) {
-            /* Extract an individual channel. */
-            cv::Mat channel(inputGeometry.height, inputGeometry.width, CV_32FC1,
-                            cv::Scalar(values[i]));
-            channels.push_back(channel);
-        }
-        cv::merge(channels, mean);
+    /*
+    CHECK(values.size() == 1 || values.size() == numChannels) <<
+                                                                "Specify either 1 meanValue or as many as channels: "
+                                                                << numChannels;
+    */
+    std::vector<cv::Mat> channels;
+    for (int i = 0; i < numChannels; ++i) {
+        /* Extract an individual channel. */
+        cv::Mat channel(inputGeometry.height, inputGeometry.width, CV_32FC1,
+                        cv::Scalar(values[i]));
+        channels.push_back(channel);
     }
+    cv::merge(channels, mean);
+
 }
 
 /* Wrap the input layer of the network in separate cv::Mat objects
@@ -211,7 +171,6 @@ BBDetector::BBDetector() {
 
 BBDetector::BBDetector(const std::string &model_file,
                const std::string &weights_file,
-               const std::string &mean_file,
                const std::string &mean_value) : BBDetector() {}
 std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
     throw std::runtime_error("Use of BBDetector requires Caffe; compile with USE_CAFFE.");

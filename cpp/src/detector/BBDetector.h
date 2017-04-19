@@ -19,15 +19,12 @@
 
 class BBDetector : public Detector {
 public:
-    BBDetector(const std::string &modelFile,
-               const std::string &weightsFile,
-               const std::string &meanFile,
-               const std::string &meanValue);
+    BBDetector(const std::string &modelFile, const std::string &weightsFile, const std::string &meanValue);
 
     std::vector<Detection> detect(const cv::Mat &image) override;
 
 private:
-    void setMean(const std::string &meanFile, const std::string &meanValue);
+    void setMean(const std::string &meanValue);
 
     void wrapInputLayer(std::vector<cv::Mat> *inputChannels);
 
@@ -47,7 +44,6 @@ public:
 
     BBDetector(const std::string &model_file,
                const std::string &weights_file,
-               const std::string &mean_file,
                const std::string &mean_value);
 
     std::vector<Detection> detect(const cv::Mat &image) override;
