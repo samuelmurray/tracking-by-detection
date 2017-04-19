@@ -9,8 +9,6 @@
 
 class DetectionFileParser {
 public:
-    static std::map<int, std::vector<Detection>> parseFile(std::ifstream &file);
-
     static std::map<int, std::vector<Detection>> parseMOTFile(std::ifstream &file);
 
 private:
@@ -19,8 +17,6 @@ private:
 
     static std::map<int, std::vector<Detection>> parseFile(
             std::ifstream &file, std::pair<int, Detection> (*parseLineFunc)(const std::string &line));
-
-    static std::pair<int, Detection> parseLine(const std::string &line);
 
     static std::pair<int, Detection> parseMOTLine(const std::string &line);
 };

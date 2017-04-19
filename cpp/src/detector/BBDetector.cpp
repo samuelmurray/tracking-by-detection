@@ -35,7 +35,7 @@ BBDetector::BBDetector(const std::string &modelFile,
 
 // Methods
 
-std::vector<Detection> BBDetector::detect(const cv::Mat &image, double confidenceThreshold) {
+std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
     Blob<float> *inputLayer = net->input_blobs()[0];
     inputLayer->Reshape(1, numChannels,
                         inputGeometry.height, inputGeometry.width);
@@ -51,23 +51,23 @@ std::vector<Detection> BBDetector::detect(const cv::Mat &image, double confidenc
 
     /* Copy the output layer to a vector */
     Blob<float> *resultBlob = net->output_blobs()[0];
+    // Result format: [image_id, label, score, xmin, ymin, xmax, ymax].
     const float *result = resultBlob->cpu_data();
     const int numDet = resultBlob->height();
     std::vector<Detection> detections;
     for (int k = 0; k < numDet; ++k) {
-        if (result[0] == -1 || result[2] < confidenceThreshold) {
+        if (result[0] == -1 || result[2] < 0.1) {
             // Skip invalid detection.
             result += 7;
             continue;
         }
         std::vector<float> det(result, result + 7);
 
-        Detection detection(int(det[1]),
-                            BoundingBox((det[3] + det[5]) / 2 * image.cols,
-                                        (det[4] + det[6]) / 2 * image.rows,
-                                        (det[5] - det[3]) * image.cols,
-                                        (det[6] - det[4]) * image.rows
-                            ));
+        Detection detection(int(det[1]), det[2], BoundingBox((det[3] + det[5]) / 2 * image.cols,
+                                                             (det[4] + det[6]) / 2 * image.rows,
+                                                             (det[5] - det[3]) * image.cols,
+                                                             (det[6] - det[4]) * image.rows
+        ));
 
         detections.push_back(detection);
         result += 7;
@@ -213,7 +213,7 @@ BBDetector::BBDetector(const std::string &model_file,
                const std::string &weights_file,
                const std::string &mean_file,
                const std::string &mean_value) : BBDetector() {}
-std::vector<Detection> BBDetector::detect(const cv::Mat &image, double confidenceThreshold) {
+std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
     throw std::runtime_error("Use of BBDetector requires Caffe; compile with USE_CAFFE.");
 }
 

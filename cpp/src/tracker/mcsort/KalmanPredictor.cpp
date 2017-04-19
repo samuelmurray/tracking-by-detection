@@ -95,7 +95,7 @@ void KalmanPredictor::update(const Detection &det) {
 // Getters
 
 Detection KalmanPredictor::getPredictedNextDetection() const {
-    return Detection(label, stateToBoundingBox(filter->get_predicted_next_state()));
+    return Detection(label, 0, stateToBoundingBox(filter->get_predicted_next_state()));
 }
 
 Tracking KalmanPredictor::getTracking() const {

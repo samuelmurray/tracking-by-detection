@@ -7,7 +7,7 @@
 #include <ostream>
 
 struct Detection {
-    Detection(int label, const BoundingBox &bb);
+    Detection(int label, double confidence, const BoundingBox &bb);
 
     Detection(const Detection &rhs);
 
@@ -19,6 +19,7 @@ struct Detection {
     Detection &operator=(Detection &&rhs) = delete;
 
     const int label;
+    const double confidence;
     const BoundingBox bb;
 };
 

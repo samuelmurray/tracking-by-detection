@@ -24,7 +24,7 @@ public:
                const std::string &meanFile,
                const std::string &meanValue);
 
-    std::vector<Detection> detect(const cv::Mat &image, double confidenceThreshold) override;
+    std::vector<Detection> detect(const cv::Mat &image) override;
 
 private:
     void setMean(const std::string &meanFile, const std::string &meanValue);
@@ -50,7 +50,7 @@ public:
                const std::string &mean_file,
                const std::string &mean_value);
 
-    std::vector<Detection> detect(const cv::Mat &image, double confidenceThreshold) override;
+    std::vector<Detection> detect(const cv::Mat &image) override;
 };
 
 #endif  //USE_CAFFE

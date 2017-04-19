@@ -12,7 +12,7 @@ public:
       * Returns a set of (semi) random Detections, independent of the image.
       * Only used as a placeholder for a real Detector, e.g. for debugging.
       */
-    std::vector<Detection> detect(const cv::Mat &image, double confidenceThreshold) override;
+    std::vector<Detection> detect(const cv::Mat &image) override;
 };
 
 
