@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    boost::filesystem::path sequencesFilePath = dataDirPath / "config" / sequencesFileName;
+    boost::filesystem::path sequencesFilePath = dataDirPath / "seqmaps" / sequencesFileName;
     std::ifstream sequencesFile(sequencesFilePath.string());
     if (sequencesFile.is_open()) {
 
