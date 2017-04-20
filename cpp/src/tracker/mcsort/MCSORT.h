@@ -26,7 +26,7 @@ private:
     const int minHits;
     std::vector<KalmanPredictor> predictors;
     //std::map<int, int> perLabelCount;
-    int trackCount;
+    int trackCount = 0;
     int frameCount = 0;
 
     /**
