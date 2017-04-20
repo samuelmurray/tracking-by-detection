@@ -1,4 +1,2 @@
-relative/path/to/MOT/data/<train/test>
-relative/path/to/results/<train/test>
-<Name_of_first_sequence>
-<Name_of_second_sequence>
+relative/path/to/first/sequence
+relative/path/to/second/sequence
