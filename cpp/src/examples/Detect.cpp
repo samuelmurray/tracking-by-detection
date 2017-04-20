@@ -15,17 +15,40 @@
 #include <chrono>
 #include <memory>
 
-const char *USAGE_MESSAGE = "Usage: %s [-d dataConfigFile] [-m modelConfigFile]\n";
+static const boost::filesystem::path dataDirPath = boost::filesystem::current_path().parent_path() / "data";
+static const boost::filesystem::path modelDirPath = boost::filesystem::current_path().parent_path() / "models";
+
+const char *USAGE_MESSAGE = "Usage: %s [-s sequencesFile] [-m modelConfigFile]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 const char *OPEN_DIR_MESSAGE = "Could not open directory %s\n";
+const char *FILE_EXISTS_MESSAGE = "Output file %s already exists; don't overwrite\n";
 
 std::pair<std::chrono::duration<double, std::milli>, int> detect(const std::shared_ptr<Detector> &detector,
-                                                                 const boost::filesystem::path &inputDirPath,
-                                                                 const boost::filesystem::path &outputPath) {
+                                                                 const boost::filesystem::path &sequencePath,
+                                                                 const std::string &modelType) {
+    typedef std::chrono::duration<double, std::milli> msduration;
+
+    // Make sure input directory exists
+    boost::filesystem::path inputDirPath = dataDirPath / sequencePath / "images";
     if (!boost::filesystem::is_directory(inputDirPath)) {
-        fprintf(stderr, OPEN_DIR_MESSAGE, inputDirPath.c_str());
+        fprintf(stderr, OPEN_DIR_MESSAGE, sequencePath.c_str());
         exit(EXIT_FAILURE);
     }
+
+    // Create output directory if not exists
+    boost::filesystem::path outputDirPath = dataDirPath / sequencePath / modelType;
+    if (!boost::filesystem::is_directory(outputDirPath)) {
+        boost::filesystem::create_directories(outputDirPath);
+    }
+
+    // Make sure output file does not exist
+    boost::filesystem::path outputPath = outputDirPath / "det.txt";
+    if (boost::filesystem::exists(outputPath)) {
+        fprintf(stderr, FILE_EXISTS_MESSAGE, outputPath.c_str());
+        return std::pair<msduration, int>(msduration(0),0);
+    }
+
+    // Make sure output file can be opened
     std::ofstream outputStream;
     outputStream.open(outputPath.string());
     if (!outputStream.is_open()) {
@@ -33,22 +56,19 @@ std::pair<std::chrono::duration<double, std::milli>, int> detect(const std::shar
         exit(EXIT_FAILURE);
     }
 
-    std::vector<Detection> detections;
-    std::chrono::duration<double, std::milli> cumulativeDuration = std::chrono::milliseconds::zero();
-    int frameCount = 0;
-    cv::Mat image;
     std::vector<boost::filesystem::path> imagePaths;
     std::copy(boost::filesystem::directory_iterator(inputDirPath),
               boost::filesystem::directory_iterator(),
               std::back_inserter(imagePaths));
     std::sort(imagePaths.begin(), imagePaths.end());
 
+    msduration cumulativeDuration = std::chrono::milliseconds::zero();
+    int frameCount = 0;
     for (auto imageIt = imagePaths.begin(); imageIt != imagePaths.end(); ++imageIt) {
-        std::cout << imageIt->string() << std::endl;
-        image = cv::imread(imageIt->string(), 1);
+        cv::Mat image = cv::imread(imageIt->string(), 1);
 
         auto startTime = std::chrono::high_resolution_clock::now();
-        detections = detector->detect(image);
+        std::vector<Detection> detections = detector->detect(image);
         auto endTime = std::chrono::high_resolution_clock::now();
 
         cumulativeDuration += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(
@@ -68,25 +88,23 @@ std::pair<std::chrono::duration<double, std::milli>, int> detect(const std::shar
         ++frameCount;
     }
     outputStream.close();
-    return std::pair<std::chrono::duration<double, std::milli>, int>(cumulativeDuration, frameCount);
+    return std::pair<msduration, int>(cumulativeDuration, frameCount);
 }
 
 #ifdef USE_CAFFE
 
 int main(int argc, char **argv) {
-    const boost::filesystem::path dataDirPath = boost::filesystem::current_path().parent_path() / "data";
-    const boost::filesystem::path modelDirPath = boost::filesystem::current_path().parent_path() / "models";
-    int opt;
 
-    std::string dataConfigFileName;
+    std::string sequencesFileName;
     std::string modelConfigFileName;
     std::string modelType;
     std::shared_ptr<Detector> detector;
 
-    while ((opt = getopt(argc, argv, "d:m:")) != -1) {
+    int opt;
+    while ((opt = getopt(argc, argv, "s:m:")) != -1) {
         switch (opt) {
-            case 'd':
-                dataConfigFileName = optarg;
+            case 's':
+                sequencesFileName = optarg;
                 break;
             case 'm':
                 modelConfigFileName = optarg;
@@ -96,7 +114,7 @@ int main(int argc, char **argv) {
                 exit(EXIT_FAILURE);
         }
     }
-    if (dataConfigFileName == "" || modelConfigFileName == "") {
+    if (sequencesFileName == "" || modelConfigFileName == "") {
         fprintf(stderr, USAGE_MESSAGE, argv[0]);
         exit(EXIT_FAILURE);
     }
@@ -119,39 +137,29 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    boost::filesystem::path dataConfigFilePath = dataDirPath / "config" / dataConfigFileName;
-    std::ifstream dataConfigFile(dataConfigFilePath.string());
-    if (dataConfigFile.is_open()) {
-        std::string datasetRelPath;
-        std::getline(dataConfigFile, datasetRelPath);
-        boost::filesystem::path datasetPath = dataDirPath / datasetRelPath;
+    boost::filesystem::path sequencesFilePath = dataDirPath / "config" / sequencesFileName;
+    std::ifstream sequencesFile(sequencesFilePath.string());
+    if (sequencesFile.is_open()) {
 
-        std::string sequence;
-        boost::filesystem::path sequenceImagesDirPath;
-        boost::filesystem::path outputDirPath;
-        boost::filesystem::path outputPath;
-        std::pair<std::chrono::duration<double, std::milli>, int> durationFrameCount;
         std::chrono::duration<double, std::milli> cumulativeDuration;
-        while (std::getline(dataConfigFile, sequence)) {
-            std::cout << "Sequence: " << sequence << std::endl;
-            sequenceImagesDirPath = datasetPath / sequence / "images";
-            outputDirPath = datasetPath / sequence / modelType;
-            if (!boost::filesystem::is_directory(outputDirPath)) {
-                boost::filesystem::create_directories(outputDirPath);
-            }
-            outputPath = outputDirPath / "det.txt";
+        int cumulativeFrameCount = 0;
 
-            durationFrameCount = detect(detector, sequenceImagesDirPath, outputPath);
+        std::string sequencePathString;
+        while (std::getline(sequencesFile, sequencePathString)) {
+            std::cout << "Sequence: " << sequencePathString << std::endl;
+            auto durationFrameCount = detect(detector, sequencePathString, modelType);
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(durationFrameCount.first).count();
-            std::cout << "Duration: " << duration << "ms (" << double(durationFrameCount.second) / duration << "fps)\n";
+            std::cout << "Duration: " << duration << "ms"
+                      << " (" << double(durationFrameCount.second * 1000) / duration << "fps)\n";
             cumulativeDuration += durationFrameCount.first;
+            cumulativeFrameCount += durationFrameCount.second;
         }
-        dataConfigFile.close();
-        std::cout << "Total duration: "
-                  << std::chrono::duration_cast<std::chrono::milliseconds>(cumulativeDuration).count()
-                  << "ms\n";
+        sequencesFile.close();
+        auto totalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(cumulativeDuration).count();
+        std::cout << "Total duration: " << totalDuration << "ms"
+                  << " (" << double(cumulativeFrameCount * 1000) / totalDuration << "fps)\n";
     } else {
-        fprintf(stderr, OPEN_FILE_MESSAGE, dataConfigFileName.c_str());
+        fprintf(stderr, OPEN_FILE_MESSAGE, sequencesFileName.c_str());
         exit(EXIT_FAILURE);
     }
     exit(EXIT_SUCCESS);
