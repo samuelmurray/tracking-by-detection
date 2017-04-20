@@ -11,6 +11,8 @@ class DetectionFileParser {
 public:
     static std::map<int, std::vector<Detection>> parseMOTFile(std::ifstream &file);
 
+    static std::map<int, std::vector<Detection>> parseOkutamaFile(std::ifstream &file);
+
 private:
     // Prevent instantiation
     DetectionFileParser() {};
@@ -19,6 +21,8 @@ private:
             std::ifstream &file, std::pair<int, Detection> (*parseLineFunc)(const std::string &line));
 
     static std::pair<int, Detection> parseMOTLine(const std::string &line);
+
+    static std::pair<int, Detection> parseOkutamaLine(const std::string &line);
 };
 
 
