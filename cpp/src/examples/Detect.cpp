@@ -45,7 +45,7 @@ std::pair<std::chrono::duration<double, std::milli>, int> detect(const std::shar
     boost::filesystem::path outputPath = outputDirPath / "det.txt";
     if (boost::filesystem::exists(outputPath)) {
         fprintf(stderr, FILE_EXISTS_MESSAGE, outputPath.c_str());
-        return std::pair<msduration, int>(msduration(0),0);
+        return std::pair<msduration, int>(msduration(0), 0);
     }
 
     // Make sure output file can be opened
@@ -86,6 +86,9 @@ std::pair<std::chrono::duration<double, std::milli>, int> detect(const std::shar
                          << "-1,-1,-1\n";
         }
         ++frameCount;
+        if (frameCount % 100 == 0) {
+            std::cout << "Processed " << frameCount << " images";
+        }
     }
     outputStream.close();
     return std::pair<msduration, int>(cumulativeDuration, frameCount);

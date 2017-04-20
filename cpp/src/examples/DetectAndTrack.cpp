@@ -89,6 +89,9 @@ std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const s
                          << "1,-1,-1,-1\n";
         }
         ++frameCount;
+        if (frameCount % 100 == 0) {
+            std::cout << "Processed " << frameCount << " images";
+        }
     }
     outputStream.close();
     return std::pair<msduration, int>(cumulativeDuration, frameCount);
