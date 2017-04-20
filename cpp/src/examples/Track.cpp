@@ -12,12 +12,13 @@
 
 const boost::filesystem::path dataDirPath = boost::filesystem::current_path().parent_path() / "data";
 
-const char *USAGE_MESSAGE = "Usage: %s [-s sequencesFile] [-m modelType]\n";
+const char *USAGE_MESSAGE = "Usage: %s [-s sequencesFile] [-m modelType] [-i frameInterval]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 const char *FILE_EXISTS_MESSAGE = "Output file %s already exists; won't overwrite\n";
 
 std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::filesystem::path &sequencePath,
-                                                                const std::string &modelType) {
+                                                                const std::string &modelType,
+                                                                const int frameInterval) {
     typedef std::chrono::duration<double, std::milli> msduration;
 
     // Make sure input file exists
@@ -29,13 +30,13 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
     }
 
     // Create output directory if not exists
-    boost::filesystem::path outputDirPath = dataDirPath / "results" / sequencePath / modelType;
+    boost::filesystem::path outputDirPath = dataDirPath / "results" / sequencePath.parent_path() / modelType;
     if (!boost::filesystem::is_directory(outputDirPath)) {
         boost::filesystem::create_directories(outputDirPath);
     }
 
     // Make sure output file does not exist
-    boost::filesystem::path outputPath = outputDirPath / "track.txt";
+    boost::filesystem::path outputPath = outputDirPath / (sequencePath.filename().string() + ".txt");
     if (boost::filesystem::exists(outputPath)) {
         fprintf(stderr, FILE_EXISTS_MESSAGE, outputPath.c_str());
         return std::pair<msduration, int>(msduration(0), 0);
@@ -53,26 +54,28 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
 
     msduration cumulativeDuration = std::chrono::milliseconds::zero();
     int frameCount = 0;
-    for (const auto &detMap : DetectionFileParser::parseMOTFile(inputStream)) {
+    const auto frameToDetections = DetectionFileParser::parseMOTFile(inputStream);
+    for (int frame = 0; frame < frameToDetections.rbegin()->first; ++frame) {
+        if (frame % frameInterval == 0 && frameToDetections.find(frame) != frameToDetections.end()) {
+            auto startTime = std::chrono::high_resolution_clock::now();
+            std::vector<Tracking> trackings = tracker.track(frameToDetections.at(frame));
+            auto endTime = std::chrono::high_resolution_clock::now();
 
-        auto startTime = std::chrono::high_resolution_clock::now();
-        std::vector<Tracking> trackings = tracker.track(detMap.second);
-        auto endTime = std::chrono::high_resolution_clock::now();
+            cumulativeDuration += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(
+                    endTime - startTime);
 
-        cumulativeDuration += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(
-                endTime - startTime);
-
-        for (auto trackingIt = trackings.begin(); trackingIt != trackings.end(); ++trackingIt) {
-            outputStream << detMap.first << ","
-                         << trackingIt->label << ","
-                         << trackingIt->ID << ","
-                         << trackingIt->bb.x1() << ","
-                         << trackingIt->bb.y1() << ","
-                         << trackingIt->bb.width << ","
-                         << trackingIt->bb.height << ","
-                         << "1,-1,-1,-1\n";
+            for (auto trackingIt = trackings.begin(); trackingIt != trackings.end(); ++trackingIt) {
+                outputStream << frame << ","
+                             << trackingIt->label << ","
+                             << trackingIt->ID << ","
+                             << trackingIt->bb.x1() << ","
+                             << trackingIt->bb.y1() << ","
+                             << trackingIt->bb.width << ","
+                             << trackingIt->bb.height << ","
+                             << "1,-1,-1,-1\n";
+            }
+            ++frameCount;
         }
-        ++frameCount;
     }
     outputStream.close();
     return std::pair<msduration, int>(cumulativeDuration, frameCount);
@@ -82,9 +85,10 @@ int main(int argc, char **argv) {
 
     std::string sequencesFileName;
     std::string modelType;
+    int frameInterval = 1;
 
     int opt;
-    while ((opt = getopt(argc, argv, "s:m:")) != -1) {
+    while ((opt = getopt(argc, argv, "s:m:i:")) != -1) {
         switch (opt) {
             case 's':
                 sequencesFileName = optarg;
@@ -92,13 +96,22 @@ int main(int argc, char **argv) {
             case 'm':
                 modelType = optarg;
                 break;
+            case 'i':
+                frameInterval = atoi(optarg);
+                break;
             default:
                 fprintf(stderr, USAGE_MESSAGE, argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
+
     if (sequencesFileName == "" || modelType == "") {
         fprintf(stderr, USAGE_MESSAGE, argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    if (frameInterval < 1) {
+        fprintf(stderr, "frameInterval must be a positive integer");
         exit(EXIT_FAILURE);
     }
 
@@ -112,7 +125,7 @@ int main(int argc, char **argv) {
         std::string sequencePathString;
         while (getline(sequencesFile, sequencePathString)) {
             std::cout << "Sequence: " << sequencePathString << std::endl;
-            auto durationFrameCount = track(sequencePathString, modelType);
+            auto durationFrameCount = track(sequencePathString, modelType, frameInterval);
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(durationFrameCount.first).count();
             std::cout << "Duration: " << duration << "ms"
                       << " (" << double(durationFrameCount.second * 1000) / duration << "fps)\n";

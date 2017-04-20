@@ -38,13 +38,13 @@ std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const s
     }
 
     // Create output directory if not exists
-    boost::filesystem::path outputDirPath = dataDirPath / "results" / sequencePath / modelType;
+    boost::filesystem::path outputDirPath = dataDirPath / "results" / sequencePath.parent_path() / modelType;
     if (!boost::filesystem::is_directory(outputDirPath)) {
         boost::filesystem::create_directories(outputDirPath);
     }
 
     // Make sure output file does not exist
-    boost::filesystem::path outputPath = outputDirPath / "track.txt";
+    boost::filesystem::path outputPath = outputDirPath / (sequencePath.filename().string() + ".txt");
     if (boost::filesystem::exists(outputPath)) {
         fprintf(stderr, FILE_EXISTS_MESSAGE, outputPath.c_str());
         return std::pair<msduration, int>(msduration(0), 0);
