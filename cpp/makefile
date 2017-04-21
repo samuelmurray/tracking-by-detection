@@ -71,7 +71,7 @@ POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
 # Instructions
 all:
-	@echo 'Call "make <target>" to build or "make run-<target>" to build and run'
+	@echo 'Call "make compile" to compile everything, or "make <target>" to compile and link a specific target'
 
 # Print variable
 print-% : ; @echo $* = $($*)
