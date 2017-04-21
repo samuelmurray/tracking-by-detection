@@ -90,7 +90,7 @@ std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const s
         }
         ++frameCount;
         if (frameCount % 100 == 0) {
-            std::cout << "Processed " << frameCount << " images";
+            std::cout << "Processed " << frameCount << " images" << std::endl;
         }
     }
     outputStream.close();
