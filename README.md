@@ -67,7 +67,7 @@ $ make test
 ```
 
 #### Caffe
-[This version of Caffe](https://github.com/weiliu89/caffe/tree/ssd) is used, which works with SSD models. Thorough instructions are given there on how to install and configure Caffe. They refer to [official documentation](http://caffe.berkeleyvision.org/installation.html) on how to install prerequisites.
+[This version of Caffe](https://github.com/weiliu89/caffe/tree/ssd) is used, which works with SSD models. Thorough instructions are given there on how to install and configure Caffe. They refer to the [official documentation](http://caffe.berkeleyvision.org/installation.html) on how to install prerequisites.
 
 #### Cuda
 See **Caffe** above.
