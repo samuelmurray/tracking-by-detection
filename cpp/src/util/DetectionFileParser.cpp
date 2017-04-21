@@ -9,7 +9,7 @@ std::map<int, std::vector<Detection>> DetectionFileParser::parseMOTFile(std::ifs
 }
 
 std::map<int, std::vector<Detection>> DetectionFileParser::parseOkutamaFile(std::ifstream &file) {
-    return parseFile(file, DetectionFileParser::parseMOTLine);
+    return parseFile(file, DetectionFileParser::parseOkutamaLine);
 }
 
 std::map<int, std::vector<Detection>> DetectionFileParser::parseFile(
@@ -33,7 +33,7 @@ std::pair<int, Detection> DetectionFileParser::parseMOTLine(const std::string &l
     int id; // Unused
     double x1, y1, width, height, confidence;
     double x, y, z; // Unused
-    int label = 0;
+    int label = 1;
     if (!(is >> frame && is.ignore() &&
           is >> id && is.ignore() &&
           is >> x1 && is.ignore() &&
