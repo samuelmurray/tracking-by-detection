@@ -18,7 +18,7 @@ TODO
 * Run demos:
   * Boost (≥1.63)
 
-<sup>\*</sup>For instructions on how to install `Caffe` and `Cuda`, see **Configure**.
+\* For instructions on how to install `Caffe` and `Cuda`, see **Configure**.
 
 #### Mac
 Use [Homebrew](https://brew.sh/) to build packages.
@@ -55,9 +55,10 @@ Not tested. Please refer to the instructions for **Linux** above; some packages 
 #### Directory structure
 The following directories should be present in root:
 * `config` - `.pc` files for dependencies.
-* `cpp` - All source code.
-* `data` - Data sets and `config_file.txt` for running the demos. The file structure of MOTChallenge is assumed for the data sets.
-* `models` - Caffe models.
+* `cpp` - C++ source code.
+* `data` - Data sets and sequence maps for running demos.
+* `models` - Caffe models for object detection.
+* `python` - Python scripts for generating images.
 
 #### pkg-config
 Make sure `PKG_CONFIG_PATH` includes the paths to the `.pc` files for all dependencies. Alternatively, copy and modify the `.pc.example` files in `config/`. Test if `pkg-config` can find `.pc` files for all dependencies, including custom ones in `config/`:
@@ -66,28 +67,22 @@ $ make test
 ```
 
 #### Caffe
-To use Caffe, put models in `models/`. [This](https://github.com/weiliu89/caffe/tree/ssd) version of Caffe is used, which works with SSD models.
+[This version of Caffe](https://github.com/weiliu89/caffe/tree/ssd) is used, which works with SSD models. Thorough instructions are given there on how to install and configure Caffe. They refer to [official documentation](http://caffe.berkeleyvision.org/installation.html) on how to install prerequisites.
 
-#### Data
-
+#### Cuda
+See **Caffe** above.
 
 ## Demo
-Two example usages are provided. Start by `cd` to `cpp/`
-1. _Track:_ Track objects from provided detections. The detections should be on the format used in [MOTChallenge](https://motchallenge.net/).  
-```
-$ make track
-$ ./trackApp.out [-g] [-f <config_file>]
-```
-1. _Detect and Track:_ Track objects detected in a provided sequence of images. Objects are detected by a CNN (Caffe).
-```
-$ make detect use_caffe=true
-$ ./detectApp.out [-f <config_file>]
-```
+#### Directory structure
+* `data/` - Put datasets (images and/or detections) here. Images are expected to be in `<path/to/sequence>/images/`, and detections in `<path/to/sequence>/model-type` (this is also where custom detections will be put). Sequence maps should exist in `data/seqmaps` (an example file is given). Tracking output will be in `data/result/<same/structure/as/dataset>/<sequence-name>.txt`.
+* `models/` - To use Caffe, put models in `models/`. Config files for each model should exist in `models/config/` (an example file is given).
 
-**NOTE:** Calling `make <target>` without passing `use_caffe=true` will make the preprocessor remove all code that uses Caffe. This is to enable compilation without Caffe installed. However, this can lead to problems when `make detect use_caffe=true` is called after `make track`, since the files that use Caffe will not be rebuilt. To prevent this, either pass `use_caffe=true` every time you compile, or call `force_rebuild=true` to force all `.o` files to be rebuilt.
+Three example usages are provided:
+1. **Detect** - Detect objects in a provided sequence of images. Objects are detected by a CNN (Caffe).
+1. **Track** - Track objects from provided detections. The detections should be on the format used in [MOTChallenge](https://motchallenge.net/), or a custom format used for the Okutama-Action dataset (not yet publicly available).
+1. **Detect and Track** - Track objects detected in a provided sequence of images. Objects are detected by a CNN (Caffe).
 
 ## Integrate in other projects
-* To track objects from pre-existing detections, create an instance of `MCSORT`. No code in `detector/` is needed.  
-* To detect and track objects from images, create an instance of `VideoTracker`. Requires Caffe.
-
-For both classes, the function `tracker.track(...)` is used.
+All source code is in `cpp/src/`.
+* To track objects from pre-existing detections, create an instance of `MCSORT`. No code in `detector/` is needed. Use function `tracker.track(<detections>)`.
+* To detect and track objects from images, create an instance of `ImageTracker`. Requires Caffe. Use function `tracker.detectAndTrack(<image>)`.
