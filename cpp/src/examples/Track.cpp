@@ -97,8 +97,8 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
 
 int main(int argc, char **argv) {
 
-    std::string sequencesFileName = "okutama_train";
-    std::string modelType = "human-detection";
+    std::string sequencesFileName = "okutama_train.txt";
+    std::string modelType = "human-detection.txt";
     std::string detectionFormat = "okutama";
     int frameInterval = 1;
 
