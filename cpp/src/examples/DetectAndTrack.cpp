@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
         }
         sequencesFile.close();
         auto totalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(cumulativeDuration).count();
-        std::cout << "Total duration: " << totalDuration << "ms"
+        std::cout << "Total duration: " << double(totalDuration) / 1000 << "s"
                   << " (" << double(cumulativeFrameCount * 1000) / totalDuration << "fps)\n";
     } else {
         fprintf(stderr, OPEN_FILE_MESSAGE, sequencesFileName.c_str());
