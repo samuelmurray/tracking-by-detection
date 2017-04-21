@@ -81,16 +81,18 @@ detect track detectAndTrack: compile $$(TARGET_$$@)
 
 # Link target's objects
 %App.out: $$(OBJECTS_%)
-	$(CXX) -o $@ $^ $(LDFLAGS)
+	@echo '(link) CXX $@'
+	@$(CXX) -o $@ $^ $(LDFLAGS)
 
 # Compile all files
 compile: $(OBJECTS)
 
 # Crazy alternative: [...]%.d | $(BUILDDIR)/$$(filter-out ./,$$(dir %)).dir --- %.dir: ; $(MKDIRIFNOTEXIST)
 $(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(DEPDIR)/%.d
-	$(MKDIRIFNOTEXIST)
-	$(COMPILE) $< -o $@
-	$(POSTCOMPILE)
+	@echo '(compile) CXX $@'
+	@$(MKDIRIFNOTEXIST)
+	@$(COMPILE) $< -o $@
+	@$(POSTCOMPILE)
 
 $(DEPDIR)/%.d:
 	$(MKDIRIFNOTEXIST)
