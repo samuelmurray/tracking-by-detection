@@ -1,0 +1,4 @@
+<model-type>
+path/from/models/to/deploy.prototxt
+path/from/models/to/model.caffemodel
+<r_mean,g_mean,b_mean>
