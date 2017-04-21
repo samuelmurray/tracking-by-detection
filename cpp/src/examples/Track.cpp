@@ -13,16 +13,16 @@
 const boost::filesystem::path dataDirPath = boost::filesystem::current_path().parent_path() / "data";
 
 const char *USAGE_MESSAGE = "Usage: %s "
-        "[-s sequencesFile] "
-        "[-m modelType] "
-        "[-d dataType (default okutama)] "
+        "[-s sequencesFile (default okutama-train)] "
+        "[-m modelType (default human-detection)] "
+        "[-d detectionFormat (default okutama)] "
         "[-i frameInterval (default 1)]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 const char *FILE_EXISTS_MESSAGE = "Output file %s already exists; won't overwrite\n";
 
 std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::filesystem::path &sequencePath,
                                                                 const std::string &modelType,
-                                                                const std::string &dataType,
+                                                                const std::string &detectionFormat,
                                                                 const int frameInterval) {
     typedef std::chrono::duration<double, std::milli> msduration;
 
@@ -58,12 +58,12 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
     MCSORT tracker;
 
     std::map<int, std::vector<Detection>> (*parseFileFunc)(std::ifstream &file);
-    if (dataType == "okutama") {
+    if (detectionFormat == "okutama") {
         parseFileFunc = DetectionFileParser::parseOkutamaFile;
-    } else if (dataType == "mot") {
+    } else if (detectionFormat == "mot") {
         parseFileFunc = DetectionFileParser::parseMOTFile;
     } else {
-        throw std::invalid_argument(dataType + " not a valid dataType");
+        throw std::invalid_argument(detectionFormat + " not a valid detectionFormat");
     }
     const auto frameToDetections = parseFileFunc(inputStream);
 
@@ -97,9 +97,9 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
 
 int main(int argc, char **argv) {
 
-    std::string sequencesFileName;
-    std::string modelType;
-    std::string dataType = "okutama";
+    std::string sequencesFileName = "okutama_train";
+    std::string modelType = "human-detection";
+    std::string detectionFormat = "okutama";
     int frameInterval = 1;
 
     int opt;
@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
                 modelType = optarg;
                 break;
             case 'd':
-                dataType = optarg;
+                detectionFormat = optarg;
                 break;
             case 'i':
                 frameInterval = atoi(optarg);
@@ -121,11 +121,6 @@ int main(int argc, char **argv) {
                 fprintf(stderr, USAGE_MESSAGE, argv[0]);
                 exit(EXIT_FAILURE);
         }
-    }
-
-    if (sequencesFileName == "" || modelType == "") {
-        fprintf(stderr, USAGE_MESSAGE, argv[0]);
-        exit(EXIT_FAILURE);
     }
 
     if (frameInterval < 1) {
@@ -143,7 +138,7 @@ int main(int argc, char **argv) {
         std::string sequencePathString;
         while (getline(sequencesFile, sequencePathString)) {
             std::cout << "Sequence: " << sequencePathString << std::endl;
-            auto durationFrameCount = track(sequencePathString, modelType, dataType, frameInterval);
+            auto durationFrameCount = track(sequencePathString, modelType, detectionFormat, frameInterval);
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(durationFrameCount.first).count();
             std::cout << "Duration: " << duration << "ms"
                       << " (" << double(durationFrameCount.second * 1000) / duration << "fps)\n";
