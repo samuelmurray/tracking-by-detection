@@ -19,6 +19,7 @@
 
 static const boost::filesystem::path dataDirPath = boost::filesystem::current_path().parent_path() / "data";
 static const boost::filesystem::path modelDirPath = boost::filesystem::current_path().parent_path() / "models";
+static const double originalFrameRate = 30;
 
 const char *USAGE_MESSAGE = "Usage: %s "
         "-s sequenceMap "
@@ -29,7 +30,8 @@ const char *FILE_EXISTS_MESSAGE = "Output file %s already exists; don't overwrit
 
 std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const std::shared_ptr<Detector> &detector,
                                                                          const boost::filesystem::path &sequencePath,
-                                                                         const std::string &modelType) {
+                                                                         const std::string &modelType,
+                                                                         const bool inRealTime) {
     typedef std::chrono::duration<double, std::milli> msduration;
 
     // Make sure input directory exists
@@ -70,18 +72,20 @@ std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const s
 
     msduration cumulativeDuration = std::chrono::milliseconds::zero();
     int frameCount = 0;
+    int frame = 0;
     for (auto imageIt = imagePaths.begin(); imageIt != imagePaths.end(); ++imageIt) {
+        std::cout << "Image: " << imageIt->string() << std::endl;
         cv::Mat image = cv::imread(imageIt->string(), 1);
 
         auto startTime = std::chrono::high_resolution_clock::now();
         std::vector<Tracking> trackings = imageTracker.detectAndTrack(image);
         auto endTime = std::chrono::high_resolution_clock::now();
-
-        cumulativeDuration += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(
+        msduration duration = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(
                 endTime - startTime);
+        cumulativeDuration += duration;
 
         for (auto trackingIt = trackings.begin(); trackingIt != trackings.end(); ++trackingIt) {
-            outputStream << frameCount << ","
+            outputStream << frame << ","
                          << trackingIt->label << ","
                          << trackingIt->ID << ","
                          << trackingIt->bb.x1() << ","
@@ -90,6 +94,15 @@ std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const s
                          << trackingIt->bb.height << ","
                          << "1,-1,-1,-1\n";
         }
+        if (inRealTime) {
+            int framesToSkip = int((originalFrameRate * duration.count()) / 1000) - 1;
+            std::cout << "Skipping " << framesToSkip << " frames" << std::endl;
+            for (int i = 0; i < framesToSkip; ++i) {
+                ++frame;
+                ++imageIt;
+            }
+        }
+        ++frame;
         ++frameCount;
         if (frameCount % 100 == 0) {
             std::cout << "Processed " << frameCount << " images" << std::endl;
@@ -106,16 +119,20 @@ int main(int argc, char **argv) {
     std::string sequenceMapName;
     std::string modelConfigFileName;
     std::string modelType;
+    bool realTime = false;
     std::shared_ptr<Detector> detector;
 
     int opt;
-    while ((opt = getopt(argc, argv, "s:m:")) != -1) {
+    while ((opt = getopt(argc, argv, "s:m:r")) != -1) {
         switch (opt) {
             case 's':
                 sequenceMapName = optarg;
                 break;
             case 'm':
                 modelConfigFileName = optarg;
+                break;
+            case 'r':
+                realTime = true;
                 break;
             default:
                 fprintf(stderr, USAGE_MESSAGE, argv[0]);
@@ -155,7 +172,7 @@ int main(int argc, char **argv) {
         std::string sequencePathString;
         while (std::getline(sequenceMap, sequencePathString)) {
             std::cout << "Sequence: " << sequencePathString << std::endl;
-            auto durationFrameCount = detectAndTrack(detector, sequencePathString, modelType);
+            auto durationFrameCount = detectAndTrack(detector, sequencePathString, modelType, realTime);
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(durationFrameCount.first).count();
             std::cout << "Duration: " << duration << "ms"
                       << " (" << double(durationFrameCount.second * 1000) / duration << "fps)\n";
