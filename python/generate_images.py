@@ -30,7 +30,7 @@ def generate(sequence_path, model_type, tracking_format, frame_interval):
 	output_dir_path = "output/{}".format(sequence_name)
 	if not os.path.exists(output_dir_path):
 		print("Creating output directory {}".format(output_dir_path))
-    	os.makedirs(output_dir_path)
+		os.makedirs(output_dir_path)
 
 	detections = np.loadtxt(path.abspath(tracking_file_path), delimiter=",")
 	colours = np.random.randint(0, 255, (32, 3))
