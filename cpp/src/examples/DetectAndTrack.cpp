@@ -99,6 +99,11 @@ std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const s
             int framesToSkip = int((originalFrameRate * duration.count()) / 1000) - 1;
             std::cout << "Skipping " << framesToSkip << " frames" << std::endl;
             for (int i = 0; i < framesToSkip; ++i) {
+            	if (imageIt == imagePaths.end()) {
+            		++frameCount;
+            		outputStream.close();
+    				return std::pair<msduration, int>(cumulativeDuration, frameCount);
+            	}
                 ++frame;
                 ++imageIt;
             }
