@@ -23,7 +23,8 @@ static const double originalFrameRate = 30;
 
 const char *USAGE_MESSAGE = "Usage: %s "
         "-s sequenceMap "
-        "-m modelConfigFile\n";
+        "-m modelConfigFile "
+        "[-r]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 const char *OPEN_DIR_MESSAGE = "Could not open directory %s\n";
 const char *FILE_EXISTS_MESSAGE = "Output file %s already exists; don't overwrite\n";
