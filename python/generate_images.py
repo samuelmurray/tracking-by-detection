@@ -1,87 +1,81 @@
 from __future__ import print_function
 
 import numpy as np
+from os import path
+import argparse
 
-SEQUENCE = "2_2_1"
-PATH_TO_DETECTIONS_FILE = "../data/results/okutama/test/human-detection/{}.txt".format(SEQUENCE)
-PATH_TO_IMAGES = "../data/okutama/test/{}/images/".format(SEQUENCE)
-PATH_TO_OUTPUT = "./output/"
-CLASS_MAP = {
-            0 : "Background",
-            1 : "Walking",
-            2 : "Sitting",
-            3 : "Standing",
-            4 : "Running",
-            5 : "Lying",
-            6 : "Carrying",
-            7 : "Pushing/Pulling",
-            8 : "Reading",
-            9 : "Drinking",
-            10 : "Calling",
-            11 : "Hand Shaking",
-            12 : "Hugging"
-}
 CONFIDENCE_THRESHOLD = 0.5
-
-def generate_and_save_PIL():
-  from PIL import Image, ImageDraw, ImageFont
-
-  # Format: [frame, label, ID, x1, y1, width, height, confidence, _, _, _]
-  detections = np.loadtxt(PATH_TO_DETECTIONS_FILE, delimiter=",")
-  colours = np.random.randint(0, 255, (32, 3))
-  frames = np.unique(detections[:,0]).astype(int)
-  
-  for frame in range(int(detections[:,0].max())):
-  #for frame in frames:
-  #for frame in range(100, 120):
-    file_name = str(frame).rjust(4, '0') + ".jpg"
-    image_path = PATH_TO_IMAGES + file_name
-    with Image.open(image_path) as image:
-      draw = ImageDraw.Draw(image, 'RGBA')
-
-      dets = detections[detections[:,0]==frame, 1:8]
-      dets[:, 4:6] += dets[:, 2:4] # Convert from [x1, y1, width, height] to [x1, y1, x2, y2]
-      if frame%10 == 0 :
-        print(frame)
-      for d in dets:
-        if d[6] < CONFIDENCE_THRESHOLD:
-          continue
-        d = d.astype(np.int32)
-        c = tuple(colours[d[1]%32, :])
-        draw.rectangle([d[2], d[3], d[4], d[5]], fill=(c + (100,)), outline=c)
-        draw.text((d[2], d[3] + 5), CLASS_MAP[d[0]], fill=(255,255,255))
-      image.save(PATH_TO_OUTPUT + file_name)
+LABEL_ACTION_MAP = {
+	0 : "Background",
+	1 : "Walking",
+	2 : "Sitting",
+	3 : "Standing",
+	4 : "Running",
+	5 : "Lying",
+	6 : "Carrying",
+	7 : "Pushing/Pulling",
+	8 : "Reading",
+	9 : "Drinking",
+	10 : "Calling",
+	11 : "Hand Shaking",
+	12 : "Hugging"
+}
 
 
-def generate_and_save_MATPLOTLIB():
-  import matplotlib.pyplot as plt
-  import matplotlib.patches as patches
-  import matplotlib.image as mpimg
-  from skimage import io
+def generate(sequence_path, model_type, tracking_format, frame_interval):
+	from PIL import Image, ImageDraw, ImageFont
+	path_until_sequence, sequence_name = path.split(sequence_path)
+	tracking_file_path = "../data/results/{}/{}/{}.txt".format(path_until_sequence, model_type, sequence_name)
+	image_dir_path = "../data/{}/images".format(sequence_path)
+	output_dir_path = "output/{}".format(sequence_name)
+	if not os.path.exists(output_dir_path):
+		print("Creating output directory {}".format(output_dir_path))
+    	os.makedirs(output_dir_path)
 
-  detections = np.loadtxt(PATH_TO_DETECTIONS_FILE, delimiter=",")
-  colours = np.random.rand(32,3)
-  plt.ion()
-  fig = plt.figure() 
-  
-  for frame in range(int(detections[:,0].max())):
-    ax1 = fig.add_subplot(111, aspect="equal")
-    file_name = str(frame).rjust(4, '0') + ".jpg"
-    image_path = PATH_TO_IMAGES + file_name
-    im = io.imread(image_path)
-    plt.imshow(im)
-    plt.title("Tracked Targets")
-    
-    dets = detections[detections[:,0]==frame,1:6]
-    for d in dets:
-      d = d.astype(np.uint32)
-      ax1.add_patch(patches.Rectangle((d[1],d[2]),d[3],d[4],fill=False,lw=3,ec=colours[d[0]%32,:]))
-      ax1.set_adjustable("box-forced")
-    fig.canvas.flush_events()
-    plt.draw()
-    plt.savefig(PATH_TO_OUTPUT + file_name)
-    ax1.cla()
+	detections = np.loadtxt(path.abspath(tracking_file_path), delimiter=",")
+	colours = np.random.randint(0, 255, (32, 3))
+
+	for frame in range(0, int(detections[:,0].max()), frame_interval):
+		image_name = str(frame).rjust(4, '0') + ".jpg"
+		image_path = "{}/{}".format(image_dir_path, image_name)
+
+		with Image.open(image_path) as image:
+			draw = ImageDraw.Draw(image, 'RGBA')
+			labels = None
+			dets = None
+			if tracking_format == "okutama":
+				# Format: [frame, label, ID, x1, y1, width, height, confidence, _, _, _]
+				labels = detections[detections[:,0]==frame, 1]
+				dets = detections[detections[:,0]==frame, 2:8]
+			elif tracking_format == "mot":
+				# Format: [frame, ID, x1, y1, width, height, confidence, _, _, _]
+				dets = detections[detections[:,0]==frame, 1:7]
+				pass
+			else:
+				return
+			dets[:, 3:5] += dets[:, 1:3] # Convert from [x1, y1, width, height] to [x1, y1, x2, y2]
+			for i, d in enumerate(dets):
+			    if d[5] < CONFIDENCE_THRESHOLD:
+			      	continue
+			    d = d.astype(np.int32)
+			    c = tuple(colours[d[0]%32, :])
+			    draw.rectangle([d[1], d[2], d[3], d[4]], fill=(c + (100,)), outline=c)
+			    if tracking_format == "okutama" and model_type == "action-detection":
+		    		draw.text((d[1], d[2] + 4), LABEL_ACTION_MAP[labels[i]], fill=(255,255,255))
+			image.save("{}/{}".format(output_dir_path, image_name))
 
 
 if __name__ == "__main__":
-  generate_and_save_PIL()
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-s', '--sequenceMap', metavar='sequenceMap', required=True,
+						help='a textfile specifying paths to sequences')
+	parser.add_argument('-m', '--modelType', metavar='modelType', required=True,
+						help='name of the type of model')
+	parser.add_argument('-f', '--trackingFormat', metavar='trackingFormat', required=True, choices=['okutama', 'mot'],
+						help='format of the tracking files')
+	parser.add_argument('-i', '--frameInterval', metavar='frameInterval', required=False, type=int, default=1,
+						help='number of frames to skip to skip between each produced frame')
+	args = parser.parse_args()
+	with open("../data/seqmaps/{}".format(args.sequenceMap)) as f:
+		for sequence_path in f:
+			generate(sequence_path, args.modelType, args.trackingFormat, args.frameInterval)
