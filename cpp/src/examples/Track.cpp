@@ -123,6 +123,10 @@ int main(int argc, char **argv) {
         }
     }
 
+    if (sequenceMapName == "" || modelType == "" || detectionFormat == "") {
+        fprintf(stderr, USAGE_MESSAGE, argv[0]);
+        exit(EXIT_FAILURE);
+    }
     if (frameInterval < 1) {
         fprintf(stderr, "frameInterval must be a positive integer");
         exit(EXIT_FAILURE);
