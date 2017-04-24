@@ -32,7 +32,7 @@ const char *FILE_EXISTS_MESSAGE = "Output file %s already exists; don't overwrit
 std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const std::shared_ptr<Detector> &detector,
                                                                          const boost::filesystem::path &sequencePath,
                                                                          const std::string &modelType,
-                                                                         const bool inRealTime) {
+                                                                         const bool realTime) {
     typedef std::chrono::duration<double, std::milli> msduration;
 
     // Make sure input directory exists
@@ -95,7 +95,7 @@ std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const s
                          << trackingIt->bb.height << ","
                          << "1,-1,-1,-1\n";
         }
-        if (inRealTime) {
+        if (realTime) {
             int framesToSkip = int((originalFrameRate * duration.count()) / 1000) - 1;
             std::cout << "Skipping " << framesToSkip << " frames" << std::endl;
             for (int i = 0; i < framesToSkip; ++i) {
