@@ -6,10 +6,7 @@
 
 // Constructors
 
-MCSORT::MCSORT() : MCSORT(1, 3) {}
-
-MCSORT::MCSORT(int maxAge, int minHits)
-        : maxAge(maxAge), minHits(minHits) {}
+MCSORT::MCSORT() {}
 
 MCSORT::~MCSORT() {}
 
@@ -18,11 +15,20 @@ MCSORT::~MCSORT() {}
 std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
     frameCount++;
 
-    Association association = associateDetectionsToPredictors(detections, predictors, Affinity::iou);
+    // Filter detections on confidence
+    std::vector<Detection> strongDetections;
+    for (const auto &detection : detections) {
+        if (detection.confidence > detectionThreshold) {
+            strongDetections.push_back(detection);
+        }
+    }
+
+    Association association = associateDetectionsToPredictors(strongDetections, predictors,
+                                                              Affinity::expCost, affinityThreshold);
 
     // Update matched predictors with assigned detections
     for (const auto &match : association.matches) {
-        predictors.at(match.second).update(detections.at(match.first));
+        predictors.at(match.second).update(strongDetections.at(match.first));
     }
 
     for (const auto p : association.unmatchedPredictors) {
@@ -31,7 +37,7 @@ std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
 
     // Create and initialise new predictors for unmatched detections
     for (const auto id : association.unmatchedDetections) {
-        KalmanPredictor predictor(detections.at(id), ++trackCount);
+        KalmanPredictor predictor(strongDetections.at(id), ++trackCount);
         predictors.push_back(std::move(predictor));
     }
 
@@ -57,7 +63,7 @@ MCSORT::Association MCSORT::associateDetectionsToPredictors(
         const std::vector<Detection> &detections,
         const std::vector<KalmanPredictor> &predictors,
         double (*affinityMeasure)(const BoundingBox &a, const BoundingBox &b),
-        double threshold) {
+        double affinityThreshold) {
 
     const int DOUBLE_PRECISION = 100;
     std::vector<std::pair<int, int>> matches;
@@ -89,7 +95,7 @@ MCSORT::Association MCSORT::associateDetectionsToPredictors(
 
     // Filter out matches with low IoU, including those for indices from padding
     for (int d = 0; d < assignment.size(); ++d) {
-        if (cost(d, assignment[d]) < threshold * DOUBLE_PRECISION) {
+        if (cost(d, assignment[d]) < affinityThreshold * DOUBLE_PRECISION) {
             if (d < detections.size()) {
                 unmatchedDetections.push_back(d);
             }

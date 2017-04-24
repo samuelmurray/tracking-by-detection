@@ -11,8 +11,6 @@ class MCSORT : public Tracker {
 public:
     MCSORT();
 
-    MCSORT(int maxAge, int minHits);
-
     virtual ~MCSORT();
 
     /**
@@ -22,8 +20,10 @@ public:
     std::vector<Tracking> track(const std::vector<Detection> &detections) override;
 
 private:
-    const int maxAge;
-    const int minHits;
+    const int maxAge = 2; // Original: 1
+    const int minHits = 0; // Original: 3
+    const double detectionThreshold = 0.4;
+    const double affinityThreshold = 0.1;
     std::vector<KalmanPredictor> predictors;
     //std::map<int, int> perLabelCount;
     int trackCount = 0;
@@ -36,7 +36,7 @@ private:
             const std::vector<Detection> &detections,
             const std::vector<KalmanPredictor> &predictors,
             double (*affinityMeasure)(const BoundingBox &a, const BoundingBox &b),
-            double threshold = 0.3);
+            double affinityThreshold);
 
     struct Association {
         std::vector<std::pair<int, int>> matches;

@@ -6,7 +6,7 @@ external/*
 !*.example
 
 # Python
-python/data/
+python/output/
 
 #### Language ####
 

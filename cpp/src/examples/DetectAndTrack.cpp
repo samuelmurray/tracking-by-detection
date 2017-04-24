@@ -20,7 +20,9 @@
 static const boost::filesystem::path dataDirPath = boost::filesystem::current_path().parent_path() / "data";
 static const boost::filesystem::path modelDirPath = boost::filesystem::current_path().parent_path() / "models";
 
-const char *USAGE_MESSAGE = "Usage: %s [-s sequencesFile] [-m modelConfigFile]\n";
+const char *USAGE_MESSAGE = "Usage: %s "
+        "-s sequenceMap "
+        "-m modelConfigFile\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 const char *OPEN_DIR_MESSAGE = "Could not open directory %s\n";
 const char *FILE_EXISTS_MESSAGE = "Output file %s already exists; don't overwrite\n";
@@ -101,7 +103,7 @@ std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const s
 
 int main(int argc, char **argv) {
 
-    std::string sequencesFileName;
+    std::string sequenceMapName;
     std::string modelConfigFileName;
     std::string modelType;
     std::shared_ptr<Detector> detector;
@@ -110,7 +112,7 @@ int main(int argc, char **argv) {
     while ((opt = getopt(argc, argv, "s:m:")) != -1) {
         switch (opt) {
             case 's':
-                sequencesFileName = optarg;
+                sequenceMapName = optarg;
                 break;
             case 'm':
                 modelConfigFileName = optarg;
@@ -120,7 +122,7 @@ int main(int argc, char **argv) {
                 exit(EXIT_FAILURE);
         }
     }
-    if (sequencesFileName == "" || modelConfigFileName == "") {
+    if (sequenceMapName == "" || modelConfigFileName == "") {
         fprintf(stderr, USAGE_MESSAGE, argv[0]);
         exit(EXIT_FAILURE);
     }
@@ -143,15 +145,15 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    boost::filesystem::path sequencesFilePath = dataDirPath / "seqmaps" / sequencesFileName;
-    std::ifstream sequencesFile(sequencesFilePath.string());
-    if (sequencesFile.is_open()) {
+    boost::filesystem::path sequenceMapPath = dataDirPath / "seqmaps" / sequenceMapName;
+    std::ifstream sequenceMap(sequenceMapPath.string());
+    if (sequenceMap.is_open()) {
 
         std::chrono::duration<double, std::milli> cumulativeDuration;
         int cumulativeFrameCount = 0;
 
         std::string sequencePathString;
-        while (std::getline(sequencesFile, sequencePathString)) {
+        while (std::getline(sequenceMap, sequencePathString)) {
             std::cout << "Sequence: " << sequencePathString << std::endl;
             auto durationFrameCount = detectAndTrack(detector, sequencePathString, modelType);
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(durationFrameCount.first).count();
@@ -160,12 +162,12 @@ int main(int argc, char **argv) {
             cumulativeDuration += durationFrameCount.first;
             cumulativeFrameCount += durationFrameCount.second;
         }
-        sequencesFile.close();
+        sequenceMap.close();
         auto totalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(cumulativeDuration).count();
         std::cout << "Total duration: " << double(totalDuration) / 1000 << "s"
                   << " (" << double(cumulativeFrameCount * 1000) / totalDuration << "fps)\n";
     } else {
-        fprintf(stderr, OPEN_FILE_MESSAGE, sequencesFileName.c_str());
+        fprintf(stderr, OPEN_FILE_MESSAGE, sequenceMapName.c_str());
         exit(EXIT_FAILURE);
     }
     exit(EXIT_SUCCESS);

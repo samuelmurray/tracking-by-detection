@@ -13,9 +13,9 @@
 const boost::filesystem::path dataDirPath = boost::filesystem::current_path().parent_path() / "data";
 
 const char *USAGE_MESSAGE = "Usage: %s "
-        "[-s sequencesFile (default okutama-train)] "
-        "[-m modelType (default human-detection)] "
-        "[-d detectionFormat (default okutama)] "
+        "-s sequenceMap "
+        "-m modelType "
+        "-f detectionFormat "
         "[-i frameInterval (default 1)]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 const char *FILE_EXISTS_MESSAGE = "Output file %s already exists; won't overwrite\n";
@@ -97,21 +97,21 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
 
 int main(int argc, char **argv) {
 
-    std::string sequencesFileName = "okutama_train.txt";
-    std::string modelType = "human-detection.txt";
-    std::string detectionFormat = "okutama";
+    std::string sequenceMapName;
+    std::string modelType;
+    std::string detectionFormat;
     int frameInterval = 1;
 
     int opt;
-    while ((opt = getopt(argc, argv, "s:m:d:i:")) != -1) {
+    while ((opt = getopt(argc, argv, "s:m:f:i:")) != -1) {
         switch (opt) {
             case 's':
-                sequencesFileName = optarg;
+                sequenceMapName = optarg;
                 break;
             case 'm':
                 modelType = optarg;
                 break;
-            case 'd':
+            case 'f':
                 detectionFormat = optarg;
                 break;
             case 'i':
@@ -123,20 +123,24 @@ int main(int argc, char **argv) {
         }
     }
 
+    if (sequenceMapName == "" || modelType == "" || detectionFormat == "") {
+        fprintf(stderr, USAGE_MESSAGE, argv[0]);
+        exit(EXIT_FAILURE);
+    }
     if (frameInterval < 1) {
         fprintf(stderr, "frameInterval must be a positive integer");
         exit(EXIT_FAILURE);
     }
 
-    boost::filesystem::path sequencesFilePath = dataDirPath / "seqmaps" / sequencesFileName;
-    std::ifstream sequencesFile(sequencesFilePath.string());
-    if (sequencesFile.is_open()) {
+    boost::filesystem::path sequenceMapPath = dataDirPath / "seqmaps" / sequenceMapName;
+    std::ifstream sequenceMap(sequenceMapPath.string());
+    if (sequenceMap.is_open()) {
 
         std::chrono::duration<double, std::milli> cumulativeDuration;
         int cumulativeFrameCount = 0;
 
         std::string sequencePathString;
-        while (getline(sequencesFile, sequencePathString)) {
+        while (getline(sequenceMap, sequencePathString)) {
             std::cout << "Sequence: " << sequencePathString << std::endl;
             auto durationFrameCount = track(sequencePathString, modelType, detectionFormat, frameInterval);
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(durationFrameCount.first).count();
@@ -145,12 +149,12 @@ int main(int argc, char **argv) {
             cumulativeDuration += durationFrameCount.first;
             cumulativeFrameCount += durationFrameCount.second;
         }
-        sequencesFile.close();
+        sequenceMap.close();
         auto totalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(cumulativeDuration).count();
         std::cout << "Total duration: " << double(totalDuration) / 1000 << "s"
                   << " (" << double(cumulativeFrameCount * 1000) / totalDuration << "fps)\n";
     } else {
-        fprintf(stderr, OPEN_FILE_MESSAGE, sequencesFileName.c_str());
+        fprintf(stderr, OPEN_FILE_MESSAGE, sequenceMapName.c_str());
         exit(EXIT_FAILURE);
     }
     exit(EXIT_SUCCESS);
