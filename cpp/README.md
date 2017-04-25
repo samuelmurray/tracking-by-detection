@@ -27,14 +27,14 @@ Three example usages are provided:
 $ make detect
 $ ./detectApp.out [-s sequencesFile] [-m modelConfigFile]
 ```
-1. **Track** - Track objects from provided detections. The detections should be on the format used in [MOTChallenge](https://motchallenge.net/), or a custom format used for the Okutama-Action dataset (not yet publicly available).
+2. **Track** - Track objects from provided detections. The detections should be on the format used in [MOTChallenge](https://motchallenge.net/), or a custom format used for the Okutama-Action dataset (not yet publicly available).
 ```
 $ make track
 $ ./trackApp.out [-s sequencesFile] [-m modelType] \
                     [-d detectionFormat] [-i frameInterval]
 ```
 
-1. **Detect and Track** - Track objects detected in a provided sequence of images. Objects are detected by a CNN (Caffe).
+3. **Detect and Track** - Track objects detected in a provided sequence of images. Objects are detected by a CNN (Caffe).
 ```
 $ make detectAndTrack
 $ ./trackApp.out [-s sequencesFile] [-m modelConfigFile]
