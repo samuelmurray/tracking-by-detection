@@ -39,7 +39,7 @@ To install `OpenCV`, see the [official documentation](http://docs.opencv.org/mas
 
 To install `dlib`, download and unpack it from [here](http://dlib.net/). Build as a shared library with:
 ```
-$ cd dclib/dlib
+$ cd dlib-<version>
 $ mkdir build
 $ cd build
 $ cmake ..
