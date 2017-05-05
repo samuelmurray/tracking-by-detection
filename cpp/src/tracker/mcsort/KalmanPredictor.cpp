@@ -3,11 +3,7 @@
 // Constructors
 
 KalmanPredictor::KalmanPredictor(const Detection &initialState, int ID)
-        : filter(nullptr),
-          label(initialState.label),
-          ID(ID),
-          timeSinceUpdate(0),
-          hitStreak(0) {
+        : Predictor(initialState.label, ID), filter(nullptr) {
     dlib::matrix<double, numStates, numStates> F; // System dynamics matrix
     dlib::matrix<double, numObservations, numStates> H; // Output matrix
     dlib::matrix<double, numStates, numStates> Q; // Process noise covariance
@@ -62,74 +58,33 @@ KalmanPredictor::KalmanPredictor(const Detection &initialState, int ID)
 }
 
 KalmanPredictor::KalmanPredictor(KalmanPredictor &&rhs)
-        : filter(std::move(rhs.filter)),
-          label(rhs.label),
-          ID(rhs.ID),
-          timeSinceUpdate(rhs.timeSinceUpdate),
-          hitStreak(rhs.hitStreak) {}
+        : Predictor(std::move(rhs)), filter(std::move(rhs.filter)) {}
 
 
 KalmanPredictor &KalmanPredictor::operator=(KalmanPredictor &&rhs) {
+    Predictor::operator=(std::move(rhs));
     filter = std::move(rhs.filter);
-    label = rhs.label;
-    ID = rhs.ID;
-    timeSinceUpdate = rhs.timeSinceUpdate;
-    hitStreak = rhs.hitStreak;
     return *this;
 }
 
 // Methods
 
 void KalmanPredictor::update() {
-    timeSinceUpdate++;
-    hitStreak = 0;
+    Predictor::update();
     filter->update();
 }
 
 void KalmanPredictor::update(const Detection &det) {
-    timeSinceUpdate = 0;
-    hitStreak++;
+    Predictor::update(det);
     filter->update(boundingBoxToMeas(det.bb));
 }
 
 // Getters
 
 Detection KalmanPredictor::getPredictedNextDetection() const {
-    return Detection(label, 0, stateToBoundingBox(filter->get_predicted_next_state()));
+    return Detection(getLabel(), 1, stateToBoundingBox(filter->get_predicted_next_state()));
 }
 
 Tracking KalmanPredictor::getTracking() const {
-    return Tracking(label, ID, stateToBoundingBox(filter->get_current_state()));
-}
-
-int KalmanPredictor::getTimeSinceUpdate() const {
-    return timeSinceUpdate;
-}
-
-int KalmanPredictor::getHitStreak() const {
-    return hitStreak;
-}
-
-int KalmanPredictor::getID() const {
-    return ID;
-}
-
-// Functions
-
-dlib::matrix<double, KalmanPredictor::numObservations, 1> KalmanPredictor::boundingBoxToMeas(const BoundingBox &bb) {
-    dlib::matrix<double, KalmanPredictor::numObservations, 1> z;
-    z = bb.cx, bb.cy, bb.area(), bb.ratio();
-    return z;
-}
-
-BoundingBox KalmanPredictor::stateToBoundingBox(const dlib::matrix<double, numStates, 1> &state) {
-    double rectifiedArea = std::max(state(2), 0.);
-    double width = std::sqrt(rectifiedArea * state(3));
-    double height = rectifiedArea / width;
-    return BoundingBox(state(0), state(1), width, height);
-}
-
-std::ostream &operator<<(std::ostream &os, const KalmanPredictor &kp) {
-    os << kp.getPredictedNextDetection();
-    return os;
+    return Tracking(getLabel(), getID(), stateToBoundingBox(filter->get_current_state()));
 }
