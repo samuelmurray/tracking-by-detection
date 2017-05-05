@@ -89,7 +89,7 @@ compile: $(OBJECTS)
 
 # Crazy alternative: [...]%.d | $(BUILDDIR)/$$(filter-out ./,$$(dir %)).dir --- %.dir: ; $(MKDIRIFNOTEXIST)
 $(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp $(DEPDIR)/%.d
-	@echo '(compile) CXX $@'
+	@echo '(compile) CXX $<'
 	@$(MKDIRIFNOTEXIST)
 	@$(COMPILE) $< -o $@
 	@$(POSTCOMPILE)
