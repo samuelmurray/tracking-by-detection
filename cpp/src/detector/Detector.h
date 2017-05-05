@@ -15,13 +15,13 @@ public:
     virtual ~Detector() = default;
 
     // Prevent copying and moving
-    Detector(Detector &&rhs) = delete;
-
-    Detector &operator=(Detector &&rhs) = delete;
-
     Detector(const Detector &) = delete;
 
+    Detector(Detector &&rhs) = delete;
+
     Detector &operator=(const Detector &) = delete;
+
+    Detector &operator=(Detector &&rhs) = delete;
 
     /**
      * Detects objects in a given image.

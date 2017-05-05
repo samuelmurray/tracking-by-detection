@@ -16,11 +16,11 @@ public:
     // Prevent copying and moving
     Tracker(const Tracker &) = delete;
 
-    Tracker(const Tracker &&) = delete;
+    Tracker(Tracker &&) = delete;
 
     Tracker &operator=(const Tracker &) = delete;
 
-    Tracker &operator=(const Tracker &&) = delete;
+    Tracker &operator=(Tracker &&) = delete;
 
     /**
      * For each timestep, tracks the given Detections.
