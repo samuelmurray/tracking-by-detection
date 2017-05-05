@@ -1,6 +1,6 @@
 #include "../ImageTracker.h"
 #include "../detector/RandomDetector.h"
-#include "../detector/BBDetector.h"
+#include "../detector/SSDDetector.h"
 #include "../tracker/mcsort/MCSORT.h"
 
 #include <opencv2/core/core.hpp>
@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
         std::getline(modelConfigFile, meanValues);
         boost::filesystem::path modelFilePath = modelDirPath / modelFile;
         boost::filesystem::path weightsFilePath = modelDirPath / weightsFile;
-        detector = std::make_shared<BBDetector>(modelFilePath.string(), weightsFilePath.string(), meanValues);
+        detector = std::make_shared<SSDDetector>(modelFilePath.string(), weightsFilePath.string(), meanValues);
     } else {
         fprintf(stderr, OPEN_FILE_MESSAGE, modelConfigFilePath.c_str());
         exit(EXIT_FAILURE);

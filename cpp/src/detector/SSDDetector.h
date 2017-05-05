@@ -1,5 +1,5 @@
-#ifndef CPP_BBDETECTOR_H
-#define CPP_BBDETECTOR_H
+#ifndef CPP_SSDDETECTOR_H
+#define CPP_SSDDETECTOR_H
 
 
 #include "Detector.h"
@@ -17,9 +17,9 @@
 
 #ifdef USE_CAFFE
 
-class BBDetector : public Detector {
+class SSDDetector : public Detector {
 public:
-    BBDetector(const std::string &modelFile, const std::string &weightsFile, const std::string &meanValue);
+    SSDDetector(const std::string &modelFile, const std::string &weightsFile, const std::string &meanValue);
 
     std::vector<Detection> detect(const cv::Mat &image) override;
 
@@ -44,11 +44,11 @@ private:
 
 #else // USE_CAFFE
 
-class BBDetector : public Detector {
+class SSDDetector : public Detector {
 public:
-    BBDetector();
+    SSDDetector();
 
-    BBDetector(const std::string &model_file, const std::string &weights_file, const std::string &mean_value);
+    SSDDetector(const std::string &model_file, const std::string &weights_file, const std::string &mean_value);
 
     std::vector<Detection> detect(const cv::Mat &image) override;
 };
@@ -56,4 +56,4 @@ public:
 #endif  //USE_CAFFE
 
 
-#endif //CPP_BBDETECTOR_H
+#endif //CPP_SSDDETECTOR_H

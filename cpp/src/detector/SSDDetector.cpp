@@ -1,4 +1,4 @@
-#include "BBDetector.h"
+#include "SSDDetector.h"
 
 #ifdef USE_CAFFE
 
@@ -9,7 +9,7 @@ using namespace caffe;
 
 // Constructors
 
-BBDetector::BBDetector(const std::string &modelFile, const std::string &weightsFile, const std::string &meanValue)
+SSDDetector::SSDDetector(const std::string &modelFile, const std::string &weightsFile, const std::string &meanValue)
         : Detector() {
     Caffe::set_mode(Caffe::GPU);
 
@@ -31,7 +31,7 @@ BBDetector::BBDetector(const std::string &modelFile, const std::string &weightsF
 
 // Methods
 
-std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
+std::vector<Detection> SSDDetector::detect(const cv::Mat &image) {
     Blob<float> *inputLayer = net->input_blobs()[0];
     inputLayer->Reshape(1, numChannels,
                         inputGeometry.height, inputGeometry.width);
@@ -72,7 +72,7 @@ std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
     return detections;
 }
 
-void BBDetector::setMean(const std::string &meanValue) {
+void SSDDetector::setMean(const std::string &meanValue) {
     cv::Scalar channelMean;
     std::stringstream ss(meanValue);
     std::vector<double> values;
@@ -97,7 +97,7 @@ void BBDetector::setMean(const std::string &meanValue) {
 
 }
 
-void BBDetector::wrapInputLayer(std::vector<cv::Mat> *inputChannels) {
+void SSDDetector::wrapInputLayer(std::vector<cv::Mat> *inputChannels) {
     Blob<float> *inputLayer = net->input_blobs()[0];
 
     int width = inputLayer->width();
@@ -110,7 +110,7 @@ void BBDetector::wrapInputLayer(std::vector<cv::Mat> *inputChannels) {
     }
 }
 
-void BBDetector::preprocess(const cv::Mat &image,
+void SSDDetector::preprocess(const cv::Mat &image,
                             std::vector<cv::Mat> *inputChannels) {
     /* Convert the input image to the input image format of the network. */
     cv::Mat sample;
@@ -156,16 +156,16 @@ void BBDetector::preprocess(const cv::Mat &image,
 
 #include <stdexcept>
 #include <iostream>
-BBDetector::BBDetector() {
-        std::cerr << "Use of BBDetector requires Caffe; compile with USE_CAFFE.\n";
-        throw std::runtime_error("Use of BBDetector requires Caffe; compile with USE_CAFFE.");
+SSDDetector::SSDDetector() {
+        std::cerr << "Use of SSDDetector requires Caffe; compile with USE_CAFFE.\n";
+        throw std::runtime_error("Use of SSDDetector requires Caffe; compile with USE_CAFFE.");
     }
 
-BBDetector::BBDetector(const std::string &model_file,
+SSDDetector::SSDDetector(const std::string &model_file,
                const std::string &weights_file,
-               const std::string &mean_value) : BBDetector() {}
-std::vector<Detection> BBDetector::detect(const cv::Mat &image) {
-    throw std::runtime_error("Use of BBDetector requires Caffe; compile with USE_CAFFE.");
+               const std::string &mean_value) : SSDDetector() {}
+std::vector<Detection> SSDDetector::detect(const cv::Mat &image) {
+    throw std::runtime_error("Use of SSDDetector requires Caffe; compile with USE_CAFFE.");
 }
 
 #endif //USE_CAFFE
