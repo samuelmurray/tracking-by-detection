@@ -4,12 +4,6 @@
 
 #include <dlib/optimization.h>
 
-// Constructors
-
-MCSORT::MCSORT() {}
-
-MCSORT::~MCSORT() {}
-
 // Methods
 
 std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {

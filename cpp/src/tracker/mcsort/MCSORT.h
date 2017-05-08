@@ -9,9 +9,9 @@ class MCSORT : public Tracker {
     struct Association;
 
 public:
-    MCSORT();
+    MCSORT() = default;
 
-    virtual ~MCSORT();
+    virtual ~MCSORT() = default;
 
     /**
       * Uses a linear velocity Kalman filters to predict locations of objects from previous frame.
