@@ -3,7 +3,7 @@
 
 
 #include "../Tracker.h"
-#include "KalmanPredictor.h"
+#include "kalman/KalmanPredictor.h"
 
 class MCSORT : public Tracker {
     struct Association;
@@ -39,7 +39,7 @@ private:
             double affinityThreshold);
 
     struct Association {
-        std::vector<std::pair<int, int>> matches;
+        std::vector<std::pair<int, int>> matching;
         std::vector<int> unmatchedDetections;
         std::vector<int> unmatchedPredictors;
     };

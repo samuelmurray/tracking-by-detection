@@ -27,7 +27,7 @@ std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
                                                               Affinity::expCost, affinityThreshold);
 
     // Update matched predictors with assigned detections
-    for (const auto &match : association.matches) {
+    for (const auto &match : association.matching) {
         predictors.at(match.second).update(strongDetections.at(match.first));
     }
 
