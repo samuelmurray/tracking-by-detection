@@ -3,7 +3,11 @@
 
 
 #include "../Tracker.h"
+#include "Predictor.h"
 #include "kalman/KalmanPredictor.h"
+
+#include <memory>
+#include <vector>
 
 class MCSORT : public Tracker {
     struct Association;
@@ -24,7 +28,7 @@ private:
     const int minHits = 0; // Original: 3
     const double detectionThreshold = 0.4;
     const double affinityThreshold = 0.1;
-    std::vector<KalmanPredictor> predictors;
+    std::vector<std::shared_ptr<Predictor>> predictors;
     //std::map<int, int> perLabelCount;
     int trackCount = 0;
     int frameCount = 0;
@@ -34,7 +38,7 @@ private:
      */
     static Association associateDetectionsToPredictors(
             const std::vector<Detection> &detections,
-            const std::vector<KalmanPredictor> &predictors,
+            const std::vector<std::shared_ptr<Predictor>> &predictors,
             double (*affinityMeasure)(const BoundingBox &a, const BoundingBox &b),
             double affinityThreshold);
 

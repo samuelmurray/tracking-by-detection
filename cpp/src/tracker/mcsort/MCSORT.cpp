@@ -1,6 +1,8 @@
 #include "MCSORT.h"
 
 #include "../Affinity.h"
+#include "kalman/KalmanPredictor.h"
+#include "particle/ParticlePredictor.h"
 
 #include <dlib/optimization.h>
 
@@ -21,33 +23,34 @@ std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
                                                               Affinity::expCost, affinityThreshold);
 
     // Update matched predictors with assigned detections
+
     for (const auto &match : association.matching) {
-        predictors.at(match.second).update(strongDetections.at(match.first));
+        predictors.at(match.second)->update(strongDetections.at(match.first));
     }
 
     for (const auto p : association.unmatchedPredictors) {
-        predictors.at(p).update();
+        predictors.at(p)->update();
     }
 
     // Create and initialise new predictors for unmatched detections
     for (const auto id : association.unmatchedDetections) {
-        KalmanPredictor predictor(strongDetections.at(id), ++trackCount);
-        predictors.push_back(std::move(predictor));
+        auto predictor = std::make_shared<ParticlePredictor>(strongDetections.at(id), ++trackCount);
+        predictors.push_back(predictor);
     }
 
     // Remove predictors that have been inactive for too long
     predictors.erase(std::remove_if(
             predictors.begin(), predictors.end(),
-            [this](const KalmanPredictor &predictor) {
-                return predictor.getTimeSinceUpdate() > maxAge;
+            [this](const std::shared_ptr<Predictor> &predictor) {
+                return predictor->getTimeSinceUpdate() > maxAge;
             }), predictors.end());
 
     // Return trackings from active predictors
     std::vector<Tracking> trackings;
     for (auto it = predictors.begin(); it != predictors.end(); ++it) {
-        if (it->getTimeSinceUpdate() < 1 &&
-            (it->getHitStreak() >= minHits || frameCount <= minHits)) {
-            trackings.push_back(it->getTracking());
+        if ((*it)->getTimeSinceUpdate() < 1 &&
+            ((*it)->getHitStreak() >= minHits || frameCount <= minHits)) {
+            trackings.push_back((*it)->getTracking());
         }
     }
     return trackings;
@@ -55,7 +58,7 @@ std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
 
 MCSORT::Association MCSORT::associateDetectionsToPredictors(
         const std::vector<Detection> &detections,
-        const std::vector<KalmanPredictor> &predictors,
+        const std::vector<std::shared_ptr<Predictor>> &predictors,
         double (*affinityMeasure)(const BoundingBox &a, const BoundingBox &b),
         double affinityThreshold) {
 
@@ -73,8 +76,9 @@ MCSORT::Association MCSORT::associateDetectionsToPredictors(
     dlib::matrix<int> cost(detections.size(), predictors.size());
     for (size_t row = 0; row < detections.size(); ++row) {
         for (size_t col = 0; col < predictors.size(); ++col) {
-            cost(row, col) = int(DOUBLE_PRECISION * affinityMeasure(detections.at(row).bb,
-                                                                    predictors.at(col).getPredictedNextDetection().bb));
+            cost(row, col) = int(DOUBLE_PRECISION * affinityMeasure(
+                    detections.at(row).bb,
+                    predictors.at(col)->getPredictedNextDetection().bb));
         }
     }
 
