@@ -10,7 +10,6 @@
 #include <memory>
 
 class KalmanPredictor : public Predictor {
-
 public:
     KalmanPredictor(const Detection &initialState, int ID);
 
