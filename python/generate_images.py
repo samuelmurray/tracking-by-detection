@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 import numpy as np
-from os import path
+import os
 import argparse
 
 CONFIDENCE_THRESHOLD = 0.5
@@ -24,7 +24,7 @@ LABEL_ACTION_MAP = {
 
 def generate(sequence_path, model_type, tracking_format, frame_interval):
 	from PIL import Image, ImageDraw, ImageFont
-	path_until_sequence, sequence_name = path.split(sequence_path)
+	path_until_sequence, sequence_name = os.path.split(sequence_path)
 	tracking_file_path = "../data/results/{}/{}/{}.txt".format(path_until_sequence, model_type, sequence_name)
 	image_dir_path = "../data/{}/images".format(sequence_path)
 	output_dir_path = "output/{}".format(sequence_name)
@@ -32,7 +32,7 @@ def generate(sequence_path, model_type, tracking_format, frame_interval):
 		print("Creating output directory {}".format(output_dir_path))
 		os.makedirs(output_dir_path)
 
-	detections = np.loadtxt(path.abspath(tracking_file_path), delimiter=",")
+	detections = np.loadtxt(os.path.abspath(tracking_file_path), delimiter=",")
 	colours = np.random.randint(0, 255, (32, 3))
 
 	for frame in range(0, int(detections[:,0].max()), frame_interval):
