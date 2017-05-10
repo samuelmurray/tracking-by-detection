@@ -29,8 +29,7 @@ SSDDetector::SSDDetector(const std::string &modelFile, const std::string &weight
 
 std::vector<Detection> SSDDetector::detect(const cv::Mat &image) {
     Blob<float> *inputLayer = net->input_blobs()[0];
-    inputLayer->Reshape(1, numChannels,
-                        inputGeometry.height, inputGeometry.width);
+    inputLayer->Reshape(1, numChannels, inputGeometry.height, inputGeometry.width);
 
     // Forward dimension change to all layers.
     net->Reshape();
@@ -98,8 +97,7 @@ void SSDDetector::wrapInputLayer(std::vector<cv::Mat> *inputChannels) {
     }
 }
 
-void SSDDetector::preprocess(const cv::Mat &image,
-                             std::vector<cv::Mat> *inputChannels) {
+void SSDDetector::preprocess(const cv::Mat &image, std::vector<cv::Mat> *inputChannels) {
     // Convert the input image to the input image format of the network.
     cv::Mat sample;
     if (image.channels() == 3 && numChannels == 1)
