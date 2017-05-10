@@ -5,7 +5,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-using namespace caffe;
+using caffe::Caffe;
+using caffe::Net;
+using caffe::Blob;
 
 // Constructors
 
@@ -13,19 +15,13 @@ SSDDetector::SSDDetector(const std::string &modelFile, const std::string &weight
         : Detector() {
     Caffe::set_mode(Caffe::GPU);
 
-    /* Load the network. */
+    // Load the network.
     net.reset(new Net<float>(modelFile, caffe::TEST));
     net->CopyTrainedLayersFrom(weightsFile);
 
-    //CHECK_EQ(net->num_inputs(), 1) << "Network should have exactly one input.";
-    //CHECK_EQ(net->num_outputs(), 1) << "Network should have exactly one output.";
-
     Blob<float> *inputLayer = net->input_blobs()[0];
     numChannels = inputLayer->channels();
-    //CHECK(numChannels == 3 || numChannels == 1)
-    //        << "Input layer should have 1 or 3 channels.";
     inputGeometry = cv::Size(inputLayer->width(), inputLayer->height());
-
     setMean(meanValue);
 }
 
@@ -35,18 +31,17 @@ std::vector<Detection> SSDDetector::detect(const cv::Mat &image) {
     Blob<float> *inputLayer = net->input_blobs()[0];
     inputLayer->Reshape(1, numChannels,
                         inputGeometry.height, inputGeometry.width);
-    /* Forward dimension change to all layers. */
-    net->Reshape();
 
+    // Forward dimension change to all layers.
+    net->Reshape();
     std::vector<cv::Mat> inputChannels;
     wrapInputLayer(&inputChannels);
-
     preprocess(image, &inputChannels);
-
     net->Forward();
 
-    /* Copy the output layer to a vector */
+    // Copy the output layer to a vector
     Blob<float> *resultBlob = net->output_blobs()[0];
+
     // Result format: [image_id, label, score, xmin, ymin, xmax, ymax].
     const float *result = resultBlob->cpu_data();
     const int numDet = resultBlob->height();
@@ -68,7 +63,6 @@ std::vector<Detection> SSDDetector::detect(const cv::Mat &image) {
         detections.push_back(detection);
         result += 7;
     }
-
     return detections;
 }
 
@@ -81,20 +75,14 @@ void SSDDetector::setMean(const std::string &meanValue) {
         double value = std::atof(item.c_str());
         values.push_back(value);
     }
-    /*
-    CHECK(values.size() == 1 || values.size() == numChannels) <<
-                                                                "Specify either 1 meanValue or as many as channels: "
-                                                                << numChannels;
-    */
+
     std::vector<cv::Mat> channels;
     for (int i = 0; i < numChannels; ++i) {
-        /* Extract an individual channel. */
-        cv::Mat channel(inputGeometry.height, inputGeometry.width, CV_32FC1,
-                        cv::Scalar(values[i]));
+        // Extract an individual channel.
+        cv::Mat channel(inputGeometry.height, inputGeometry.width, CV_32FC1, cv::Scalar(values[i]));
         channels.push_back(channel);
     }
     cv::merge(channels, mean);
-
 }
 
 void SSDDetector::wrapInputLayer(std::vector<cv::Mat> *inputChannels) {
@@ -111,8 +99,8 @@ void SSDDetector::wrapInputLayer(std::vector<cv::Mat> *inputChannels) {
 }
 
 void SSDDetector::preprocess(const cv::Mat &image,
-                            std::vector<cv::Mat> *inputChannels) {
-    /* Convert the input image to the input image format of the network. */
+                             std::vector<cv::Mat> *inputChannels) {
+    // Convert the input image to the input image format of the network.
     cv::Mat sample;
     if (image.channels() == 3 && numChannels == 1)
         cv::cvtColor(image, sample, cv::COLOR_BGR2GRAY);
@@ -140,16 +128,12 @@ void SSDDetector::preprocess(const cv::Mat &image,
     cv::Mat sampleNormalized;
     cv::subtract(sampleFloat, mean, sampleNormalized);
 
-    /* This operation will write the separate BGR planes directly to the
-     * input layer of the network because it is wrapped by the cv::Mat
-     * objects in inputChannels. */
-    cv::split(sampleNormalized, *inputChannels);
-
     /*
-    CHECK(reinterpret_cast<float *>(inputChannels->at(0).data)
-          == net->input_blobs()[0]->cpu_data())
-            << "Input channels are not wrapping the input layer of the network.";
-    */
+     * This operation will write the separate BGR planes directly to the
+     * input layer of the network because it is wrapped by the cv::Mat
+     * objects in inputChannels.
+     */
+    cv::split(sampleNormalized, *inputChannels);
 }
 
 #else //USE_CAFFE
