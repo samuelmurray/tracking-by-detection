@@ -49,17 +49,17 @@ TARGET_track := trackApp.out
 TARGET_detectAndTrack := detectAndTrackApp.out
 TARGETS := $(TARGET_detect) $(TARGET_track) $(TARGET_detectAndTrack) 
 
-# For running Detect.cpp
+# For running DetectDemo.cpp
 OBJECTS_detect := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
-OBJECTS_detect += $(BUILDDIR)/$(MAINDIR)/Detect.o
+OBJECTS_detect += $(BUILDDIR)/$(MAINDIR)/DetectDemo.o
 
-# For running Track.cpp
+# For running TrackDemo.cpp
 OBJECTS_track := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
-OBJECTS_track += $(BUILDDIR)/$(MAINDIR)/Track.o
+OBJECTS_track += $(BUILDDIR)/$(MAINDIR)/TrackDemo.o
 
-# For running DetectAndTrack.cpp
+# For running DetectAndTrackDemo.cpp
 OBJECTS_detectAndTrack := $(filter-out $(BUILDDIR)/$(MAINDIR)/%.o,$(OBJECTS))
-OBJECTS_detectAndTrack += $(BUILDDIR)/$(MAINDIR)/DetectAndTrack.o
+OBJECTS_detectAndTrack += $(BUILDDIR)/$(MAINDIR)/DetectAndTrackDemo.o
 
 # Build instructioncs
 MKDIRIFNOTEXIST = @test -d $(@D) || mkdir -p $(@D)

@@ -1,7 +1,7 @@
 #include "../ImageTracker.h"
 #include "../detector/RandomDetector.h"
 #include "../detector/SSDDetector.h"
-#include "../tracker/mcsort/MCSORT.h"
+#include "../tracker/PAOT.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -63,7 +63,7 @@ std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const s
         exit(EXIT_FAILURE);
     }
 
-    ImageTracker imageTracker(detector, std::make_shared<MCSORT>());
+    ImageTracker imageTracker(detector, std::make_shared<PAOT>());
 
     std::vector<boost::filesystem::path> imagePaths;
     std::copy(boost::filesystem::directory_iterator(inputDirPath),

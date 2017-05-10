@@ -41,6 +41,6 @@ $ ./trackApp.out [-s sequencesFile] [-m modelConfigFile]
 ```
 
 ## Integrate in other projects
-* To detect objects from images, create an instance of `BBDetector`. Requires Caffe. Use function `detector.detect(<image>)`.
-* To track objects from pre-existing detections, create an instance of `MCSORT`. No code in `detector/` is needed. Use function `tracker.track(<detections>)`.
+* To detect objects from images, create an instance of `SSDDetector`. Requires Caffe. Use function `detector.detect(<image>)`.
+* To track objects from pre-existing detections, create an instance of `PAOT`. No code in `detector/` is needed. Use function `tracker.track(<detections>)`.
 * To detect and track objects from images, create an instance of `ImageTracker`. Requires Caffe. Use function `tracker.detectAndTrack(<image>)`.

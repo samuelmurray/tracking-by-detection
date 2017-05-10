@@ -1,14 +1,14 @@
-#include "MCSORT.h"
+#include "PAOT.h"
 
-#include "../Affinity.h"
-#include "kalman/KalmanPredictor.h"
-#include "particle/ParticlePredictor.h"
+#include "Affinity.h"
+#include "predictor/kalman/KalmanPredictor.h"
+#include "predictor/particle/ParticlePredictor.h"
 
 #include <dlib/optimization.h>
 
 // Methods
 
-std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
+std::vector<Tracking> PAOT::track(const std::vector<Detection> &detections) {
     frameCount++;
 
     // Filter detections on confidence
@@ -56,7 +56,7 @@ std::vector<Tracking> MCSORT::track(const std::vector<Detection> &detections) {
     return trackings;
 }
 
-MCSORT::Association MCSORT::associateDetectionsToPredictors(
+PAOT::Association PAOT::associateDetectionsToPredictors(
         const std::vector<Detection> &detections,
         const std::vector<std::shared_ptr<Predictor>> &predictors,
         double (*affinityMeasure)(const BoundingBox &a, const BoundingBox &b),
@@ -70,7 +70,7 @@ MCSORT::Association MCSORT::associateDetectionsToPredictors(
     if (predictors.empty()) {
         for (int i = 0; i < detections.size(); ++i)
             unmatchedDetections.push_back(i);
-        return MCSORT::Association{matches, unmatchedDetections, unmatchedPredictors};
+        return PAOT::Association{matches, unmatchedDetections, unmatchedPredictors};
     }
 
     dlib::matrix<int> cost(detections.size(), predictors.size());
@@ -104,5 +104,5 @@ MCSORT::Association MCSORT::associateDetectionsToPredictors(
             matches.push_back(std::pair<int, int>(d, assignment[d]));
         }
     }
-    return MCSORT::Association{matches, unmatchedDetections, unmatchedPredictors};
+    return PAOT::Association{matches, unmatchedDetections, unmatchedPredictors};
 }

@@ -1,5 +1,5 @@
 #include "../tracker/Tracker.h"
-#include "../tracker/mcsort/MCSORT.h"
+#include "../tracker/PAOT.h"
 #include "../util/DetectionFileParser.h"
 
 #include <boost/filesystem.hpp>
@@ -43,8 +43,8 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
     // Make sure output file does not exist
     boost::filesystem::path outputPath = outputDirPath / (sequencePath.filename().string() + ".txt");
     if (boost::filesystem::exists(outputPath)) {
-        fprintf(stderr, FILE_EXISTS_MESSAGE, outputPath.c_str());
-        return std::pair<msduration, int>(msduration(0), 0);
+        fprintf(stderr, FILE_EXISTS_MESSAGE, outputPath.c_str()); // FIXME:
+        //return std::pair<msduration, int>(msduration(0), 0);
     }
 
     // Make sure output file can be opened
@@ -55,7 +55,7 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
         exit(EXIT_FAILURE);
     }
 
-    MCSORT tracker;
+    PAOT tracker;
 
     std::map<int, std::vector<Detection>> (*parseFileFunc)(std::ifstream &file);
     if (detectionFormat == "okutama") {
@@ -70,6 +70,7 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
     msduration cumulativeDuration = std::chrono::milliseconds::zero();
     int frameCount = 0;
     for (int frame = 0; frame < frameToDetections.rbegin()->first; ++frame) {
+        std::cout << frame << std::endl;
         if (frame % frameInterval == 0 && frameToDetections.find(frame) != frameToDetections.end()) {
             auto startTime = std::chrono::high_resolution_clock::now();
             std::vector<Tracking> trackings = tracker.track(frameToDetections.at(frame));

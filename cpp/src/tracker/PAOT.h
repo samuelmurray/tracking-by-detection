@@ -1,21 +1,21 @@
-#ifndef CPP_MCSORT_H
-#define CPP_MCSORT_H
+#ifndef CPP_PAOT_H
+#define CPP_PAOT_H
 
 
-#include "../Tracker.h"
-#include "Predictor.h"
-#include "kalman/KalmanPredictor.h"
+#include "Tracker.h"
+#include "predictor/Predictor.h"
+#include "predictor/kalman/KalmanPredictor.h"
 
 #include <memory>
 #include <vector>
 
-class MCSORT : public Tracker {
+class PAOT : public Tracker {
     struct Association;
 
 public:
-    MCSORT() = default;
+    PAOT() = default;
 
-    virtual ~MCSORT() = default;
+    virtual ~PAOT() = default;
 
     /**
       * Uses a linear velocity Kalman filters to predict locations of objects from previous frame.
@@ -29,7 +29,6 @@ private:
     const double detectionThreshold = 0.4;
     const double affinityThreshold = 0.1;
     std::vector<std::shared_ptr<Predictor>> predictors;
-    //std::map<int, int> perLabelCount;
     int trackCount = 0;
     int frameCount = 0;
 
