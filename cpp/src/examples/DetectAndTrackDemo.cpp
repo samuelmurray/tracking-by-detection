@@ -2,6 +2,8 @@
 #include "../detector/SSDDetector.h"
 #include "../tracker/PAOT.h"
 #include "../tracker/predictor/kalman/KalmanPredictor.h"
+#include "../tracker/predictor/particle/ParticlePredictor.h"
+#include "../tracker/predictor/StationaryPredictor.h"
 #include "../util/Affinity.h"
 
 #include <opencv2/core/core.hpp>
@@ -64,15 +66,24 @@ std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const s
         exit(EXIT_FAILURE);
     }
 
-    std::shared_ptr<PAOT<KalmanPredictor>> tracker(new PAOT<KalmanPredictor>(2, 0, 0.4, 0.3, Affinity::iou));
+    // Create tracker
+    std::shared_ptr<Tracker> tracker;
+    // TODO: Add cmd line argument as switch
+    if (true) {
+        tracker = std::make_shared<PAOT<KalmanPredictor>>(2, 0, 0.4, 0.3, Affinity::iou);
+    } else {
+        tracker = std::make_shared<PAOT<ParticlePredictor>>(2, 0, 0.4, 0.3, Affinity::iou);
+    }
     ImageTracker imageTracker(detector, tracker);
 
+    // Store paths to all frames sorted by frame number
     std::vector<boost::filesystem::path> imagePaths;
     std::copy(boost::filesystem::directory_iterator(inputDirPath),
               boost::filesystem::directory_iterator(),
               std::back_inserter(imagePaths));
     std::sort(imagePaths.begin(), imagePaths.end());
 
+    // Loop through all frames
     msduration cumulativeDuration = std::chrono::milliseconds::zero();
     int frameCount = 0;
     int frame = 0;

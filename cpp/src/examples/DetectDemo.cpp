@@ -58,12 +58,14 @@ std::pair<std::chrono::duration<double, std::milli>, int> detect(const std::shar
         exit(EXIT_FAILURE);
     }
 
+    // Store paths to all frames sorted by frame number
     std::vector<boost::filesystem::path> imagePaths;
     std::copy(boost::filesystem::directory_iterator(inputDirPath),
               boost::filesystem::directory_iterator(),
               std::back_inserter(imagePaths));
     std::sort(imagePaths.begin(), imagePaths.end());
 
+    // Loop through all frames
     msduration cumulativeDuration = std::chrono::milliseconds::zero();
     int frameCount = 0;
     for (auto imageIt = imagePaths.begin(); imageIt != imagePaths.end(); ++imageIt) {

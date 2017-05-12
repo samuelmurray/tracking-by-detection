@@ -60,8 +60,16 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
         return std::pair<msduration, int>(msduration(0), 0);
     }
 
-    PAOT<KalmanPredictor> tracker(2, 0, 0.4, 0.3, Affinity::iou);
+    // Create tracker
+    std::shared_ptr<Tracker> tracker;
+    // TODO: Add cmd line argument as switch
+    if (true) {
+        tracker = std::make_shared<PAOT<KalmanPredictor>>(2, 0, 0.4, 0.3, Affinity::iou);
+    } else {
+        tracker = std::make_shared<PAOT<ParticlePredictor>>(2, 0, 0.4, 0.3, Affinity::iou);
+    }
 
+    // Parse detections
     std::map<int, std::vector<Detection>> (*parseFileFunc)(std::ifstream &file);
     if (detectionFormat == "okutama") {
         parseFileFunc = DetectionFileParser::parseOkutamaFile;
@@ -72,12 +80,13 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
     }
     const auto frameToDetections = parseFileFunc(inputStream);
 
+    // Loop through all frames
     msduration cumulativeDuration = std::chrono::milliseconds::zero();
     int frameCount = 0;
     for (int frame = 0; frame < frameToDetections.rbegin()->first; ++frame) {
         if (frame % frameInterval == 0 && frameToDetections.find(frame) != frameToDetections.end()) {
             auto startTime = std::chrono::high_resolution_clock::now();
-            std::vector<Tracking> trackings = tracker.track(frameToDetections.at(frame));
+            std::vector<Tracking> trackings = tracker->track(frameToDetections.at(frame));
             auto endTime = std::chrono::high_resolution_clock::now();
 
             cumulativeDuration += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(
