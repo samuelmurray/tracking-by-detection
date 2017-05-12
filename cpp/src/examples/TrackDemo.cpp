@@ -1,6 +1,7 @@
 #include "../tracker/Tracker.h"
 #include "../tracker/PAOT.h"
 #include "../util/DetectionFileParser.h"
+#include "../tracker/predictor/kalman/KalmanPredictor.h"
 
 #include <boost/filesystem.hpp>
 
@@ -57,7 +58,7 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
         return std::pair<msduration, int>(msduration(0), 0);
     }
 
-    PAOT tracker;
+    PAOT<KalmanPredictor> tracker(2, 0, 0.4, 0.3, Affinity::iou);
 
     std::map<int, std::vector<Detection>> (*parseFileFunc)(std::ifstream &file);
     if (detectionFormat == "okutama") {

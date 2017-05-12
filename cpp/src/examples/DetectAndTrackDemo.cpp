@@ -2,6 +2,7 @@
 #include "../detector/RandomDetector.h"
 #include "../detector/SSDDetector.h"
 #include "../tracker/PAOT.h"
+#include "../tracker/predictor/kalman/KalmanPredictor.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -63,7 +64,8 @@ std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const s
         exit(EXIT_FAILURE);
     }
 
-    ImageTracker imageTracker(detector, std::make_shared<PAOT>());
+    std::shared_ptr<PAOT<KalmanPredictor>> tracker(new PAOT<KalmanPredictor>(2, 0, 0.4, 0.3, Affinity::iou));
+    ImageTracker imageTracker(detector, tracker);
 
     std::vector<boost::filesystem::path> imagePaths;
     std::copy(boost::filesystem::directory_iterator(inputDirPath),
