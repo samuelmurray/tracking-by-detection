@@ -1,8 +1,8 @@
 #include "../ImageTracker.h"
-#include "../detector/RandomDetector.h"
 #include "../detector/SSDDetector.h"
 #include "../tracker/PAOT.h"
 #include "../tracker/predictor/kalman/KalmanPredictor.h"
+#include "../util/Affinity.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>

@@ -1,7 +1,9 @@
-#include "../tracker/Tracker.h"
 #include "../tracker/PAOT.h"
-#include "../util/DetectionFileParser.h"
 #include "../tracker/predictor/kalman/KalmanPredictor.h"
+#include "../tracker/predictor/particle/ParticlePredictor.h"
+#include "../tracker/predictor/StationaryPredictor.h"
+#include "../util/Affinity.h"
+#include "../util/DetectionFileParser.h"
 
 #include <boost/filesystem.hpp>
 

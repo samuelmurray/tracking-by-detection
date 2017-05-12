@@ -2,7 +2,7 @@
 #define CPP_AFFINITY_H
 
 
-#include "../util/BoundingBox.h"
+#include "BoundingBox.h"
 
 class Affinity {
 public:

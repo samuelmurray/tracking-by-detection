@@ -1,6 +1,6 @@
 #include "ParticleFilter.h"
 #include "../Predictor.h"
-#include "../../Affinity.h"
+#include "../../../util/Affinity.h"
 
 #include <random>
 #include <algorithm>

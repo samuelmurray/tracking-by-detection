@@ -3,8 +3,6 @@
 
 
 #include "Tracker.h"
-#include "predictor/Predictor.h"
-#include "Affinity.h"
 
 #include <dlib/optimization.h>
 
@@ -22,8 +20,9 @@ public:
     virtual ~PAOT() = default;
 
     /**
-      * Uses a linear velocity Kalman filters to predict locations of objects from previous frame.
-      * Associates detections to Kalman filters using an Affinity measure and the Hungarian Algorithm.
+      * Uses a Predictor (T) to predict locations of objects from previous frame.
+      * Associates Detections to Predictors using an Affinity measure and the Hungarian algorithm.
+      * Updates Predictors with matched Detections, and instatiate new Predictors for unmatched Detections.
       */
     std::vector<Tracking> track(const std::vector<Detection> &detections) override;
 
@@ -39,7 +38,7 @@ private:
     int frameCount = 0;
 
     /**
-     * Uses an Affinity measure and Hungarian algorithm to determine which detection corresponds to which Kalman filter.
+     * Uses an Affinity measure and Hungarian algorithm to determine which Detection corresponds to which Predictor.
      */
     Association associateDetectionsToPredictors(
             const std::vector<Detection> &detections,
@@ -117,7 +116,7 @@ std::vector<Tracking> PAOT<T>::track(const std::vector<Detection> &detections) {
 
 template<class T>
 typename PAOT<T>::Association PAOT<T>::associateDetectionsToPredictors(const std::vector<Detection> &detections,
-                                                              const std::vector<std::shared_ptr<T>> &predictors) {
+                                                                       const std::vector<std::shared_ptr<T>> &predictors) {
     const int DOUBLE_PRECISION = 100; // Used to convert doubles to ints
     std::vector<std::pair<int, int>> matches;
     std::vector<int> unmatchedDetections;
@@ -147,6 +146,7 @@ typename PAOT<T>::Association PAOT<T>::associateDetectionsToPredictors(const std
         cost = dlib::join_cols(cost, dlib::zeros_matrix<int>(cost.nc() - cost.nr(), 1));
     }
 
+    // Find best matching by Hungarian algorithm
     std::vector<long> assignment = dlib::max_cost_assignment(cost);
 
     // Filter out matches with low IoU, including those for indices from padding
