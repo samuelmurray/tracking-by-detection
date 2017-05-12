@@ -87,13 +87,14 @@ std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const s
 
         for (auto trackingIt = trackings.begin(); trackingIt != trackings.end(); ++trackingIt) {
             outputStream << frame << ","
-                         << trackingIt->label << ","
                          << trackingIt->ID << ","
                          << trackingIt->bb.x1() << ","
                          << trackingIt->bb.y1() << ","
                          << trackingIt->bb.width << ","
                          << trackingIt->bb.height << ","
-                         << "1,-1,-1,-1\n";
+                         << "1" << "," // Confidence
+                         << "-1,-1,-1" << "," // Unused
+                         << trackingIt->label << "\n";
         }
         if (realTime) {
             int framesToSkip = int((originalFrameRate * duration.count()) / 1000) - 1;

@@ -16,14 +16,16 @@ const char *USAGE_MESSAGE = "Usage: %s "
         "-s sequenceMap "
         "-m modelType "
         "-f detectionFormat "
-        "[-i frameInterval (default 1)]\n";
+        "[-i frameInterval (default 1)] "
+        "[-x (overwrites result)]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 const char *FILE_EXISTS_MESSAGE = "Output file %s already exists; won't overwrite\n";
 
 std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::filesystem::path &sequencePath,
                                                                 const std::string &modelType,
                                                                 const std::string &detectionFormat,
-                                                                const int frameInterval) {
+                                                                const int frameInterval,
+                                                                const bool doOverwriteResult) {
     typedef std::chrono::duration<double, std::milli> msduration;
 
     // Make sure input file exists
@@ -31,7 +33,7 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
     std::ifstream inputStream(inputPath.string());
     if (!inputStream.is_open()) {
         fprintf(stderr, OPEN_FILE_MESSAGE, inputPath.c_str());
-        exit(EXIT_FAILURE);
+        return std::pair<msduration, int>(msduration(0), 0);
     }
 
     // Create output directory if not exists
@@ -42,9 +44,9 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
 
     // Make sure output file does not exist
     boost::filesystem::path outputPath = outputDirPath / (sequencePath.filename().string() + ".txt");
-    if (boost::filesystem::exists(outputPath)) {
-        fprintf(stderr, FILE_EXISTS_MESSAGE, outputPath.c_str()); // FIXME:
-        //return std::pair<msduration, int>(msduration(0), 0);
+    if (boost::filesystem::exists(outputPath) && !doOverwriteResult) {
+        fprintf(stderr, FILE_EXISTS_MESSAGE, outputPath.c_str());
+        return std::pair<msduration, int>(msduration(0), 0);
     }
 
     // Make sure output file can be opened
@@ -52,7 +54,7 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
     outputStream.open(outputPath.string());
     if (!outputStream.is_open()) {
         fprintf(stderr, OPEN_FILE_MESSAGE, outputPath.c_str());
-        exit(EXIT_FAILURE);
+        return std::pair<msduration, int>(msduration(0), 0);
     }
 
     PAOT tracker;
@@ -70,7 +72,6 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
     msduration cumulativeDuration = std::chrono::milliseconds::zero();
     int frameCount = 0;
     for (int frame = 0; frame < frameToDetections.rbegin()->first; ++frame) {
-        std::cout << frame << std::endl;
         if (frame % frameInterval == 0 && frameToDetections.find(frame) != frameToDetections.end()) {
             auto startTime = std::chrono::high_resolution_clock::now();
             std::vector<Tracking> trackings = tracker.track(frameToDetections.at(frame));
@@ -81,13 +82,14 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
 
             for (auto trackingIt = trackings.begin(); trackingIt != trackings.end(); ++trackingIt) {
                 outputStream << frame << ","
-                             << trackingIt->label << ","
                              << trackingIt->ID << ","
                              << trackingIt->bb.x1() << ","
                              << trackingIt->bb.y1() << ","
                              << trackingIt->bb.width << ","
                              << trackingIt->bb.height << ","
-                             << "1,-1,-1,-1\n";
+                             << "1" << "," // Confidence
+                             << "-1,-1,-1" << "," // Unused
+                             << trackingIt->label << "\n";
             }
             ++frameCount;
         }
@@ -102,9 +104,10 @@ int main(int argc, char **argv) {
     std::string modelType;
     std::string detectionFormat;
     int frameInterval = 1;
+    bool doOverwriteResult = false;
 
     int opt;
-    while ((opt = getopt(argc, argv, "s:m:f:i:")) != -1) {
+    while ((opt = getopt(argc, argv, "s:m:f:i:x")) != -1) {
         switch (opt) {
             case 's':
                 sequenceMapName = optarg;
@@ -117,6 +120,9 @@ int main(int argc, char **argv) {
                 break;
             case 'i':
                 frameInterval = atoi(optarg);
+                break;
+            case 'x':
+                doOverwriteResult = true;
                 break;
             default:
                 fprintf(stderr, USAGE_MESSAGE, argv[0]);
@@ -143,7 +149,8 @@ int main(int argc, char **argv) {
         std::string sequencePathString;
         while (getline(sequenceMap, sequencePathString)) {
             std::cout << "Sequence: " << sequencePathString << std::endl;
-            auto durationFrameCount = track(sequencePathString, modelType, detectionFormat, frameInterval);
+            auto durationFrameCount = track(sequencePathString, modelType, detectionFormat, frameInterval,
+                                            doOverwriteResult);
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(durationFrameCount.first).count();
             std::cout << "Duration: " << duration << "ms"
                       << " (" << double(durationFrameCount.second * 1000) / duration << "fps)\n";

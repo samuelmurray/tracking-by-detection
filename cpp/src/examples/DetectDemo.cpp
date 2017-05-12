@@ -78,14 +78,14 @@ std::pair<std::chrono::duration<double, std::milli>, int> detect(const std::shar
 
         for (auto detectionIt = detections.begin(); detectionIt != detections.end(); ++detectionIt) {
             outputStream << frameCount << ","
-                         << detectionIt->label << ","
-                         << "-1,"
+                         << "-1" << "," // ID
                          << detectionIt->bb.x1() << ","
                          << detectionIt->bb.y1() << ","
                          << detectionIt->bb.width << ","
                          << detectionIt->bb.height << ","
                          << detectionIt->confidence << ","
-                         << "-1,-1,-1\n";
+                         << "-1,-1,-1" << "," // Unused
+                         << detectionIt->label << "\n";
         }
         ++frameCount;
         if (frameCount % 100 == 0) {
