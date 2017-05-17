@@ -27,7 +27,9 @@ static const double originalFrameRate = 30;
 const char *USAGE_MESSAGE = "Usage: %s "
         "-s sequenceMap "
         "-m modelConfigFile "
-        "[-r]\n";
+        "-p predictorType (kalman, particle) "
+        "[-r] (real-time) "
+        "[-x (overwrites result)]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
 const char *OPEN_DIR_MESSAGE = "Could not open directory %s\n";
 const char *FILE_EXISTS_MESSAGE = "Output file %s already exists; don't overwrite\n";
@@ -35,7 +37,9 @@ const char *FILE_EXISTS_MESSAGE = "Output file %s already exists; don't overwrit
 std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const std::shared_ptr<Detector> &detector,
                                                                          const boost::filesystem::path &sequencePath,
                                                                          const std::string &modelType,
-                                                                         const bool realTime) {
+                                                                         const std::string &predictorType,
+                                                                         const bool realTime,
+                                                                         const bool doOverwriteResult) {
     typedef std::chrono::duration<double, std::milli> msduration;
 
     // Make sure input directory exists
@@ -68,11 +72,12 @@ std::pair<std::chrono::duration<double, std::milli>, int> detectAndTrack(const s
 
     // Create tracker
     std::shared_ptr<Tracker> tracker;
-    // TODO: Add cmd line argument as switch
-    if (true) {
+    if (predictorType == "kalman") {
         tracker = std::make_shared<PAOT<KalmanPredictor>>(2, 0, 0.4, 0.3, Affinity::iou);
-    } else {
+    } else if (predictorType == "particle") {
         tracker = std::make_shared<PAOT<ParticlePredictor>>(2, 0, 0.4, 0.3, Affinity::iou);
+    } else {
+        throw std::invalid_argument(predictorType + " not a valid predictorType");
     }
     ImageTracker imageTracker(detector, tracker);
 
@@ -139,11 +144,13 @@ int main(int argc, char **argv) {
     std::string sequenceMapName;
     std::string modelConfigFileName;
     std::string modelType;
+    std::string predictorType;
     bool realTime = false;
+    bool doOverwriteResult = false;
     std::shared_ptr<Detector> detector;
 
     int opt;
-    while ((opt = getopt(argc, argv, "s:m:r")) != -1) {
+    while ((opt = getopt(argc, argv, "s:m:p:rx")) != -1) {
         switch (opt) {
             case 's':
                 sequenceMapName = optarg;
@@ -151,8 +158,14 @@ int main(int argc, char **argv) {
             case 'm':
                 modelConfigFileName = optarg;
                 break;
+            case 'p':
+                predictorType = optarg;
+                break;
             case 'r':
                 realTime = true;
+                break;
+            case 'x':
+                doOverwriteResult = true;
                 break;
             default:
                 fprintf(stderr, USAGE_MESSAGE, argv[0]);
@@ -192,7 +205,8 @@ int main(int argc, char **argv) {
         std::string sequencePathString;
         while (std::getline(sequenceMap, sequencePathString)) {
             std::cout << "Sequence: " << sequencePathString << std::endl;
-            auto durationFrameCount = detectAndTrack(detector, sequencePathString, modelType, realTime);
+            auto durationFrameCount = detectAndTrack(detector, sequencePathString, modelType, predictorType,
+                                                     realTime, doOverwriteResult);
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(durationFrameCount.first).count();
             std::cout << "Duration: " << duration << "ms"
                       << " (" << double(durationFrameCount.second * 1000) / duration << "fps)\n";

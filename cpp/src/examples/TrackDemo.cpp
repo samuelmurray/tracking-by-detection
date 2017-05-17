@@ -18,7 +18,8 @@ const boost::filesystem::path dataDirPath = boost::filesystem::current_path().pa
 const char *USAGE_MESSAGE = "Usage: %s "
         "-s sequenceMap "
         "-m modelType "
-        "-f detectionFormat "
+        "-f detectionFormat (okutama, mot) "
+        "-p predictorType (kalman, particle) "
         "[-i frameInterval (default 1)] "
         "[-x (overwrites result)]\n";
 const char *OPEN_FILE_MESSAGE = "Could not open file %s\n";
@@ -27,6 +28,7 @@ const char *FILE_EXISTS_MESSAGE = "Output file %s already exists; won't overwrit
 std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::filesystem::path &sequencePath,
                                                                 const std::string &modelType,
                                                                 const std::string &detectionFormat,
+                                                                const std::string &predictorType,
                                                                 const int frameInterval,
                                                                 const bool doOverwriteResult) {
     typedef std::chrono::duration<double, std::milli> msduration;
@@ -62,11 +64,12 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
 
     // Create tracker
     std::shared_ptr<Tracker> tracker;
-    // TODO: Add cmd line argument as switch
-    if (true) {
+    if (predictorType == "kalman") {
         tracker = std::make_shared<PAOT<KalmanPredictor>>(2, 0, 0.4, 0.3, Affinity::iou);
-    } else {
+    } else if (predictorType == "particle") {
         tracker = std::make_shared<PAOT<ParticlePredictor>>(2, 0, 0.4, 0.3, Affinity::iou);
+    } else {
+        throw std::invalid_argument(predictorType + " not a valid predictorType");
     }
 
     // Parse detections
@@ -115,11 +118,12 @@ int main(int argc, char **argv) {
     std::string sequenceMapName;
     std::string modelType;
     std::string detectionFormat;
+    std::string predictorType;
     int frameInterval = 1;
     bool doOverwriteResult = false;
 
     int opt;
-    while ((opt = getopt(argc, argv, "s:m:f:i:x")) != -1) {
+    while ((opt = getopt(argc, argv, "s:m:f:p:i:x")) != -1) {
         switch (opt) {
             case 's':
                 sequenceMapName = optarg;
@@ -129,6 +133,9 @@ int main(int argc, char **argv) {
                 break;
             case 'f':
                 detectionFormat = optarg;
+                break;
+            case 'p':
+                predictorType = optarg;
                 break;
             case 'i':
                 frameInterval = atoi(optarg);
@@ -142,7 +149,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (sequenceMapName == "" || modelType == "" || detectionFormat == "") {
+    if (sequenceMapName == "" || modelType == "" || detectionFormat == "" || predictorType == "") {
         fprintf(stderr, USAGE_MESSAGE, argv[0]);
         exit(EXIT_FAILURE);
     }
@@ -161,8 +168,8 @@ int main(int argc, char **argv) {
         std::string sequencePathString;
         while (getline(sequenceMap, sequencePathString)) {
             std::cout << "Sequence: " << sequencePathString << std::endl;
-            auto durationFrameCount = track(sequencePathString, modelType, detectionFormat, frameInterval,
-                                            doOverwriteResult);
+            auto durationFrameCount = track(sequencePathString, modelType, detectionFormat, predictorType,
+                                            frameInterval, doOverwriteResult);
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(durationFrameCount.first).count();
             std::cout << "Duration: " << duration << "ms"
                       << " (" << double(durationFrameCount.second * 1000) / duration << "fps)\n";
