@@ -24,7 +24,10 @@ LABEL_ACTION_MAP = {
 def generate(sequence_path, model_type, frame_interval, confidence_threshold):
 	from PIL import Image, ImageDraw, ImageFont
 	path_until_sequence, sequence_name = os.path.split(sequence_path)
-	tracking_file_path = "../data/results/{}/{}/{}.txt".format(path_until_sequence, model_type, sequence_name)
+	if model_type == "gt":
+		tracking_file_path = "../data/{}/gt/det.txt".format(sequence_path)	
+	else:
+		tracking_file_path = "../data/results/{}/{}/{}.txt".format(path_until_sequence, model_type, sequence_name)
 	image_dir_path = "../data/{}/images".format(sequence_path)
 	output_dir_path = "output/{}".format(sequence_name)
 	if not os.path.exists(output_dir_path):
@@ -47,7 +50,7 @@ def generate(sequence_path, model_type, frame_interval, confidence_threshold):
 				labels = detections[detections[:,0]==frame, 1]
 			dets[:, 3:5] += dets[:, 1:3] # Convert from [x1, y1, width, height] to [x1, y1, x2, y2]
 			for i, d in enumerate(dets):
-			    if d[5] < CONFIDENCE_THRESHOLD:
+			    if d[5] < confidence_threshold:
 			      	continue
 			    d = d.astype(np.int32)
 			    c = tuple(colours[d[0]%32, :])
