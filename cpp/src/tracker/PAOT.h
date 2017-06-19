@@ -22,15 +22,15 @@ public:
     /**
       * Uses a Predictor (T) to predict locations of objects from previous frame.
       * Associates Detections to Predictors using an Affinity measure and the Hungarian algorithm.
-      * Updates Predictors with matched Detections, and instatiate new Predictors for unmatched Detections.
+      * Updates Predictors with matched Detections, and instantiate new Predictors for unmatched Detections.
       */
     std::vector<Tracking> track(const std::vector<Detection> &detections) override;
 
 private:
     const int maxAge; // Original: 1, Okutama: 2
     const int minHits; // Original: 3, Okutama: 0
-    const double detectionThreshold; // 0.4
-    const double affinityThreshold; // Original: 0.3;
+    const double detectionThreshold; // Original: 0.4
+    const double affinityThreshold; // Original: 0.3
     double (*affinityMeasure)(const BoundingBox &a, const BoundingBox &b);
 
     std::vector<std::shared_ptr<T>> predictors;

@@ -23,7 +23,7 @@ public:
     Tracker &operator=(Tracker &&) = delete;
 
     /**
-     * For each timestep, tracks the given Detections.
+     * For each time step, tracks the given Detections.
      * Returns the Trackings.
      */
     virtual std::vector<Tracking> track(const std::vector<Detection> &detections) = 0;
