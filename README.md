@@ -79,7 +79,7 @@ See **Caffe** above.
 
 Three example usages are provided:
 1. **Detect** - Detect objects in a provided sequence of images. Objects are detected by a CNN (Caffe).
-1. **Track** - Track objects from provided detections. The detections should be on the format used in [MOTChallenge](https://motchallenge.net/), or a custom format used for the Okutama-Action dataset (not yet publicly available).
+1. **Track** - Track objects from provided detections. The detections should be on the format used in [MOTChallenge](https://motchallenge.net/).
 1. **Detect and Track** - Track objects detected in a provided sequence of images. Objects are detected by a CNN (Caffe).
 
 ## Integrate in other projects
