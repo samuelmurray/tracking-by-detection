@@ -4,6 +4,19 @@ Connects detections in consecutive frames in a video in a _tracking-by-detection
 ## Introduction
 TODO
 
+This work constitutes my master thesis. The thesis will later be published on a university portal, but per request, an almost-final version is avalable [on arXiv](https://arxiv.org/abs/1709.03572).
+
+## Citing
+If you find this repository useful in your research, please consider citing the report:
+```
+@article{murray2017real,
+  title={Real-Time Multiple Object Tracking - A Study on the Importance of Speed},
+  author={Murray, Samuel},
+  journal={arXiv preprint arXiv:1709.03572},
+  year = {2017}
+}
+```
+
 ## Dependencies
 * Build:
   * C++11
