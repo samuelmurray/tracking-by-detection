@@ -1,13 +1,13 @@
 # tracking-by-detection
-Connects detections in consecutive frames in a video in a _tracking-by-detection_ way.
+Code for my master thesis, titled "Real-Time Multiple Object Tracking: A Study on the Importance of Speed".
 
 ## Introduction
-TODO
+In this project, we implement a multiple object tracker, following the _tracking-by-detection_ paradigm, as an extension of an existing method. It works by modelling the movement of objects by solving the filtering problem, and associating detections with predicted new locations in new frames using the Hungarian algorithm. Three different similarity measures are used, which use the location and shape of the bounding boxes. Compared to other trackers on the [MOTChallenge](https://motchallenge.net/) leaderboard, our method, referred to as _C++SORT_, is the fastest non-anonymous submission, while also achieving decent score on other metrics. By running our model on the [Okutama-Action](http://okutama-action.org/) dataset, sampled at different frame-rates, we show that the performance is greatly reduced when running the model - including detecting objects - in real-time. In most metrics, the score is reduced by 50%, but in certain cases as much as 90%. We argue that this indicates that other, slower methods could not be used for tracking in real-time, but that more research is required specifically on this.
 
-This work constitutes my master thesis. The thesis will later be published on a university portal, but per request, an almost-final version is avalable [on arXiv](https://arxiv.org/abs/1709.03572).
+This work constitutes my master thesis. The thesis is published [on a university portal](http://www.diva-portal.org/smash/record.jsf?pid=diva2:1146388), but is also made avalable [on arXiv](https://arxiv.org/abs/1709.03572).
 
 ## Citing
-If you find this repository useful in your research, please consider citing the report:
+If you find the thesis or this repository useful in your research, please consider citing the report:
 ```
 @article{murray2017real,
   title={Real-Time Multiple Object Tracking - A Study on the Importance of Speed},
@@ -92,7 +92,7 @@ See **Caffe** above.
 
 Three example usages are provided:
 1. **Detect** - Detect objects in a provided sequence of images. Objects are detected by a CNN (Caffe).
-1. **Track** - Track objects from provided detections. The detections should be on the format used in [MOTChallenge](https://motchallenge.net/), or a custom format used for the Okutama-Action dataset (not yet publicly available).
+1. **Track** - Track objects from provided detections. The detections should be on the format used in [MOTChallenge](https://motchallenge.net/).
 1. **Detect and Track** - Track objects detected in a provided sequence of images. Objects are detected by a CNN (Caffe).
 
 ## Integrate in other projects
