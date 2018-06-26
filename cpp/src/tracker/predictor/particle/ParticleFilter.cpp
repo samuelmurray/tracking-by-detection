@@ -65,7 +65,7 @@ void ParticleFilter::update(const BoundingBox &bb) {
         weightSum += particles.at(i)->weight;
     }
     if (weightSum == 0) {
-        // If not particle is good, restart with a new filter
+        // If no particle is good, restart with a new filter
         ParticleFilter newFilter(bb);
         *this = std::move(newFilter);
         return;

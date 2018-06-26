@@ -30,7 +30,7 @@ private:
     const int maxAge; // Original: 1, Okutama: 2
     const int minHits; // Original: 3, Okutama: 0
     const double detectionThreshold; // Original: 0.4
-    const double affinityThreshold; // Original: 0.3
+    const double affinityThreshold; // IoU: 0.3, expCost: 0.5, linCost: 10000
     double (*affinityMeasure)(const BoundingBox &a, const BoundingBox &b);
 
     std::vector<std::shared_ptr<T>> predictors;

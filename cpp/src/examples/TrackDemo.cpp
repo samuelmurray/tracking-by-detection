@@ -68,6 +68,8 @@ std::pair<std::chrono::duration<double, std::milli>, int> track(const boost::fil
         tracker = std::make_shared<PAOT<KalmanPredictor>>(2, 0, 0.4, 0.3, Affinity::iou);
     } else if (predictorType == "particle") {
         tracker = std::make_shared<PAOT<ParticlePredictor>>(2, 0, 0.4, 0.3, Affinity::iou);
+    } else if (predictorType == "stationary") {
+        tracker = std::make_shared<PAOT<ParticlePredictor>>(2, 0, 0.4, 0.3, Affinity::iou);
     } else {
         throw std::invalid_argument(predictorType + " not a valid predictorType");
     }
